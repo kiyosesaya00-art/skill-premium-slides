@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts: Noto Serif SC (CJK display) · Noto Sans SC (CJK body) · Space Mono (data chrome) · Fraunces (latin italic) -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ===========================================
+   THEME TOKENS  —  "Waveform / Oscilloscope" (H)
+   Cool-grey paper, deep ink, muted sage accent.
+   Change these to retune the whole deck.
+   =========================================== */
+:root{
+  --stage-bg:#0f1012;            /* letterbox around stage */
+  --paper:#E9E9E6;               /* main slide surface */
+  --paper2:#E1E1DC;
+  --ink:#202326;                 /* primary text / dark slides */
+  --ink2:#2b2f32;                /* dark panel */
+  --dim:#585c5e;                 /* secondary text */
+  --line:#cbccc6;                /* hairlines / borders */
+  --accent:#5f6e54;              /* sage (structure / headers) */
+  --accent-soft:#7A8A6E;         /* lighter sage */
+  --accent-hi:#a9b89a;           /* pale sage highlight on dark */
+  --hot:#A65A44;                 /* muted terracotta (emphasis / caution) */
+  --hot-soft:#c07a63;
+  /* muted pastel node fills (low saturation, cohere with sage/paper) */
+  --c-blue:#DCE4E8;
+  --c-teal:#DCE7DF;
+  --c-gold:#ECE7D6;
+  --c-red:#E9DEE0;
+  --c-flat:#E3E4E0;
+  --node-ink:#2c3033;
+  --font-serif:'Noto Serif SC',serif;
+  --font-sans:'Noto Sans SC',sans-serif;
+  --font-mono:'Space Mono',monospace;
+  --font-ital:'Fraunces',serif;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+
+/* ===========================================
+   FIXED 16:9 STAGE (viewport-base.css — full)
+   =========================================== */
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--stage-bg,#000)}
+.deck-viewport{position:fixed;inset:0;overflow:hidden;background:var(--stage-bg,#000)}
+.deck-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;background:var(--paper)}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;display:block;visibility:hidden;opacity:0;pointer-events:none;background:var(--paper)}
+.slide.active,.slide.visible{visibility:visible;opacity:1;pointer-events:auto;z-index:1}
+img,video,canvas,svg{max-width:100%;max-height:100%}
+.deck-controls{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:1000}
+@media print{
+  html,body{width:1920px;height:auto;overflow:visible;background:#fff}
+  .deck-viewport{position:static;overflow:visible;background:#fff}
+  .deck-stage{position:static;width:auto;height:auto;transform:none!important;background:none}
+  .slide{position:relative;display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:1920px;height:1080px;break-after:page;page-break-after:always}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+  .deck-controls{display:none!important}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.2s!important}
+}
+
+/* ===========================================
+   ENTRANCE ANIMATIONS  (staggered reveal)
+   =========================================== */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.slide.visible .reveal{opacity:1;transform:none}
+.slide.visible .reveal:nth-child(1){transition-delay:.05s}
+.slide.visible .reveal:nth-child(2){transition-delay:.13s}
+.slide.visible .reveal:nth-child(3){transition-delay:.21s}
+.slide.visible .reveal:nth-child(4){transition-delay:.29s}
+.slide.visible .reveal:nth-child(5){transition-delay:.37s}
+.slide.visible .reveal:nth-child(6){transition-delay:.45s}
+.slide.visible .reveal:nth-child(7){transition-delay:.53s}
+.slide.visible .reveal:nth-child(8){transition-delay:.61s}
+.stagger>*{opacity:0;transform:translateY(22px);transition:opacity .55s var(--ease),transform .55s var(--ease)}
+.slide.visible .stagger>*{opacity:1;transform:none}
+.slide.visible .stagger>*:nth-child(1){transition-delay:.20s}
+.slide.visible .stagger>*:nth-child(2){transition-delay:.30s}
+.slide.visible .stagger>*:nth-child(3){transition-delay:.40s}
+.slide.visible .stagger>*:nth-child(4){transition-delay:.50s}
+.slide.visible .stagger>*:nth-child(5){transition-delay:.60s}
+.slide.visible .stagger>*:nth-child(6){transition-delay:.70s}
+
+/* ===========================================
+   SHARED CHROME  (content slides)
+   =========================================== */
+.slide.content{background:var(--paper);color:var(--ink)}
+.wave-sig{position:absolute;top:96px;right:96px;width:190px;height:44px;opacity:.5;z-index:0}
+.head{position:absolute;top:92px;left:96px;right:96px;z-index:2}
+.kicker{font-family:var(--font-mono);font-size:22px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase}
+.title{font-family:var(--font-serif);font-weight:900;font-size:60px;line-height:1.05;color:var(--ink);margin-top:8px}
+.rule{width:118px;height:5px;background:var(--accent);margin-top:20px}
+.subtitle{font-family:var(--font-sans);font-weight:400;font-size:25px;color:var(--dim);margin-top:16px;max-width:1500px;line-height:1.5}
+.foot{position:absolute;bottom:50px;left:96px;right:96px;display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:17px;color:var(--dim);border-top:1px solid var(--line);padding-top:14px;z-index:2}
+.foot .src{color:var(--accent)}
+.body{position:absolute;left:96px;right:96px;z-index:2}
+
+/* emphasis text helpers */
+.em{color:var(--hot);font-weight:700}
+.emk{color:var(--accent);font-weight:700}
+b{font-weight:700}
+
+/* ---- generic cards / panels ---- */
+.panel{background:var(--paper2);border-left:8px solid var(--accent);padding:30px 36px}
+.panel.hot{border-left-color:var(--hot)}
+.panel-lbl{font-family:var(--font-mono);font-size:19px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;margin-bottom:14px}
+.panel.hot .panel-lbl{color:var(--hot)}
+
+.statement{background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;text-align:center;padding:0 60px}
+.statement .t{font-family:var(--font-serif);font-weight:700;font-size:30px;line-height:1.4}
+
+/* ===========================================
+   CHAPTER DIVIDER slides (dark)
+   =========================================== */
+.slide.divider{background:var(--paper);color:var(--ink)}
+.divider .motif{position:absolute;inset:0;z-index:0;opacity:.55}
+.divider .num{position:absolute;top:150px;left:120px;font-family:var(--font-mono);font-size:30px;letter-spacing:.28em;color:var(--accent);z-index:2}
+.divider .accent-bar{position:absolute;top:232px;left:0;width:100%;height:5px;background:var(--accent);z-index:2}
+.divider .dtitle{position:absolute;top:280px;left:120px;right:180px;font-family:var(--font-serif);font-weight:900;font-size:74px;line-height:1.15;color:var(--ink);z-index:2}
+.divider .concl{position:absolute;left:120px;right:120px;bottom:150px;background:var(--paper2);border-left:8px solid var(--accent);padding:36px 44px;z-index:2}
+.divider .concl .lbl{font-family:var(--font-mono);font-size:20px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;margin-bottom:20px}
+.divider .concl p{font-family:var(--font-sans);font-weight:400;font-size:25px;line-height:1.55;color:var(--dim);margin-bottom:14px}
+.divider .concl p:last-child{margin-bottom:0}
+.divider .concl p.key{color:var(--hot);font-weight:700}
+.divider .chnum{position:absolute;right:120px;bottom:150px;font-family:var(--font-serif);font-weight:900;font-size:240px;line-height:.8;color:rgba(95,110,84,.12);z-index:1}
+
+/* ===========================================
+   COVER
+   =========================================== */
+.slide.cover{background:var(--paper);color:var(--ink)}
+.cover .motif{position:absolute;inset:0;z-index:0;opacity:.6}
+.cover .mast{position:absolute;top:0;left:0;right:0;height:88px;background:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:0 70px;z-index:3;font-family:var(--font-mono);font-size:21px;letter-spacing:.10em;color:#c9cbc4}
+.cover .mast .dot{width:12px;height:12px;background:var(--accent-soft);border-radius:50%;display:inline-block;margin-right:14px;vertical-align:middle}
+.cover .tick{position:absolute;width:28px;height:28px;z-index:3}
+.cover .tick::before,.cover .tick::after{content:"";position:absolute;background:var(--accent)}
+.cover .tick::before{left:13px;top:0;width:2px;height:28px}.cover .tick::after{top:13px;left:0;height:2px;width:28px}
+.cover .tick.tl{left:56px;top:132px}.cover .tick.tr{right:56px;top:132px}.cover .tick.bl{left:56px;bottom:64px}.cover .tick.br{right:56px;bottom:64px}
+.cover .hero{position:absolute;top:210px;left:120px;right:120px;z-index:2}
+.cover .kick{font-family:var(--font-mono);font-size:24px;letter-spacing:.30em;color:var(--accent);text-transform:uppercase;margin-bottom:22px}
+.cover .big{font-family:var(--font-serif);font-weight:900;font-size:150px;line-height:1.0;color:var(--ink)}
+.cover .big em{font-style:normal;color:var(--accent)}
+.cover .cline{width:520px;height:4px;background:var(--accent);margin:34px 0 26px}
+.cover .sub-en{font-family:var(--font-ital);font-style:italic;font-size:46px;color:var(--dim)}
+.cover .sub-cn{font-family:var(--font-serif);font-weight:600;font-size:38px;color:var(--ink);margin-top:8px}
+.cover .thesis{font-family:var(--font-sans);font-weight:300;font-size:27px;color:var(--dim);margin-top:30px;max-width:1400px;line-height:1.7;border-left:4px solid var(--accent);padding-left:26px}
+.cover .chips{position:absolute;left:120px;right:120px;bottom:150px;display:flex;gap:22px;z-index:2}
+.cover .chip{flex:1;background:var(--paper2);border-top:4px solid var(--accent);padding:22px 24px}
+.cover .chip .c-k{font-family:var(--font-mono);font-size:17px;letter-spacing:.12em;color:var(--accent);margin-bottom:10px}
+.cover .chip .c-t{font-family:var(--font-serif);font-weight:700;font-size:24px;color:var(--ink);line-height:1.2;margin-bottom:10px}
+.cover .chip .c-d{font-family:var(--font-sans);font-weight:300;font-size:18px;color:var(--dim);line-height:1.35}
+.cover .cfoot{position:absolute;left:120px;bottom:70px;font-family:var(--font-mono);font-size:19px;color:var(--dim);z-index:2}
+
+/* ===========================================
+   NODE FLOW (horizontal)
+   =========================================== */
+.flow{display:flex;align-items:flex-start;justify-content:center;gap:0}
+.flow .node{width:290px;flex:none}
+.flow .box{height:150px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 16px}
+.flow .box .bt{font-family:var(--font-serif);font-weight:700;font-size:23px;color:var(--node-ink);line-height:1.2}
+.flow .node .sub{font-family:var(--font-sans);font-weight:400;font-size:17px;color:var(--dim);text-align:center;margin-top:14px;line-height:1.35}
+.flow .arrow{width:56px;height:150px;display:flex;align-items:center;justify-content:center;color:#9aa2a0;font-size:34px;flex:none}
+.chain-edge{font-family:var(--font-mono);font-size:16px;color:var(--hot);text-align:center;height:26px}
+
+/* ===========================================
+   TABLES
+   =========================================== */
+table.tbl{width:100%;border-collapse:collapse;font-family:var(--font-sans)}
+table.tbl th{background:var(--ink);color:var(--paper);font-weight:700;font-size:18px;padding:12px 10px;text-align:center;border:1px solid var(--ink)}
+table.tbl td{font-size:17px;color:var(--dim);padding:9px 12px;text-align:center;border:1px solid var(--line);line-height:1.28}
+table.tbl td:first-child,table.tbl td.lead{color:var(--ink);font-weight:700;text-align:left}
+table.tbl tr:nth-child(even) td{background:#f2f2ef}
+table.tbl tr:nth-child(odd) td{background:#fbfbfa}
+
+/* ===========================================
+   TWO-COLUMN "meaning" slides
+   =========================================== */
+.cols{display:flex;gap:40px}
+.col{flex:1;background:#fff;border:1px solid var(--line)}
+.col .ch{padding:20px 30px;font-family:var(--font-serif);font-weight:700;font-size:26px;color:var(--paper)}
+.col.biz .ch{background:var(--hot)}
+.col.worker .ch{background:var(--accent)}
+.col ul{list-style:none;padding:26px 34px}
+.col li{font-family:var(--font-sans);font-weight:400;font-size:20px;color:#3a3f42;line-height:1.5;margin-bottom:18px;padding-left:26px;position:relative}
+.col li::before{content:"";position:absolute;left:0;top:11px;width:10px;height:10px;border-radius:2px}
+.col.biz li::before{background:var(--hot)}
+.col.worker li::before{background:var(--accent)}
+.meaning-note{position:absolute;left:96px;bottom:96px;font-family:var(--font-sans);font-size:16px;color:var(--dim);z-index:2}
+
+/* ===========================================
+   QUADRANT (2x2)
+   =========================================== */
+.quad{position:relative}
+.quad .grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;width:100%;height:100%}
+.quad .cell{border-radius:12px;padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.quad .cell .qt{font-family:var(--font-serif);font-weight:700;font-size:24px;color:var(--ink);margin-bottom:10px}
+.quad .cell .qa{font-family:var(--font-sans);font-weight:700;font-size:21px;color:var(--accent);margin-bottom:12px}
+.quad .cell .qe{font-family:var(--font-sans);font-weight:300;font-size:17px;color:var(--dim);line-height:1.4}
+.axis-x{position:absolute;text-align:center;font-family:var(--font-mono);font-size:19px;color:var(--ink);font-weight:700}
+.axis-y{position:absolute;font-family:var(--font-mono);font-size:19px;color:var(--ink);font-weight:700;writing-mode:vertical-rl}
+
+/* ===========================================
+   RADAR + gates
+   =========================================== */
+.gates{position:absolute;right:96px;top:300px;width:720px;z-index:2}
+.gate{background:#fff;border:1px solid var(--line);border-left:8px solid var(--accent);padding:20px 28px;margin-bottom:16px}
+.gate .gt{font-family:var(--font-serif);font-weight:700;font-size:23px;color:var(--ink);margin-bottom:6px}
+.gate .gd{font-family:var(--font-sans);font-weight:300;font-size:18px;color:var(--dim);line-height:1.4}
+.gate.g2{border-left-color:var(--hot)}
+.gate.g3{border-left-color:var(--accent-soft)}
+
+/* ===========================================
+   PYRAMID
+   =========================================== */
+.pyr{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px}
+.pyr .lvl{height:96px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 20px}
+.pyr .lvl .lt{font-family:var(--font-serif);font-weight:700;font-size:22px;color:var(--ink);margin-right:14px}
+.pyr .lvl .ld{font-family:var(--font-sans);font-weight:300;font-size:19px;color:#3a3f42}
+
+/* ===========================================
+   SCALE-R vars row
+   =========================================== */
+.vars{display:flex;gap:18px;justify-content:center}
+.var{flex:1;border-radius:14px;padding:24px 10px;text-align:center}
+.var .vk{font-family:var(--font-serif);font-weight:900;font-size:44px;color:var(--node-ink)}
+.var .vn{font-family:var(--font-sans);font-weight:700;font-size:18px;color:#3a3f42;margin-top:6px}
+.var .vw{font-family:var(--font-mono);font-weight:700;font-size:20px;color:var(--hot);margin-top:8px}
+.formula{background:var(--ink);color:var(--paper);text-align:center;padding:22px;font-family:var(--font-mono);font-weight:700;font-size:24px;letter-spacing:.02em}
+
+/* generic small tiles row */
+.tiles{display:flex;gap:20px}
+.tile{flex:1;border-radius:14px;padding:26px 28px}
+.tile .tt{font-family:var(--font-serif);font-weight:700;font-size:24px;color:var(--node-ink);margin-bottom:12px}
+.tile .td{font-family:var(--font-sans);font-weight:300;font-size:19px;color:#3a3f42;line-height:1.45}
+.tile .tag{font-family:var(--font-mono);font-weight:700;font-size:18px;color:var(--hot);margin-top:14px;display:block}
+.tile .idx{font-family:var(--font-mono);font-size:17px;color:var(--accent);letter-spacing:.1em;margin-bottom:8px}
+
+/* scatter plot (图表07) */
+.scatter{position:relative}
+.scatter .yax{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.scatter .xax{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--accent)}
+.scatter .dot{position:absolute;width:26px;height:26px;border-radius:50%;transform:translate(-50%,50%)}
+.scatter .lbl{position:absolute;transform:translate(-50%,50%)}
+.scatter .lbl .n{font-family:var(--font-serif);font-weight:700;font-size:23px;color:var(--ink)}
+.scatter .lbl .s{font-family:var(--font-sans);font-weight:300;font-size:17px;color:var(--dim);margin-top:2px}
+
+/* dark inset box (AI冲击不对称) */
+.dark-box{background:var(--ink);color:var(--paper);padding:32px 36px}
+.dark-box h4{font-family:var(--font-serif);font-weight:700;font-size:24px;color:var(--accent-hi);margin-bottom:20px}
+.dark-box .row{font-family:var(--font-sans);font-weight:300;font-size:19px;line-height:1.4;margin-bottom:16px;color:#d9dad4}
+.dark-box .row b{color:var(--paper)}
+.dark-box .tagm{font-family:var(--font-mono);font-weight:700;font-size:18px;margin-right:8px}
+
+/* five-source list */
+.src-list{display:flex;flex-direction:column;gap:14px}
+.src-row{display:flex;align-items:stretch;background:var(--paper2)}
+.src-row .no{width:70px;flex:none;background:var(--accent);color:var(--paper);display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-weight:900;font-size:30px}
+.src-row .tx{padding:12px 22px}
+.src-row .tx .st{font-family:var(--font-serif);font-weight:700;font-size:22px;color:var(--ink)}
+.src-row .tx .sd{font-family:var(--font-sans);font-weight:300;font-size:18px;color:var(--dim);margin-top:3px;line-height:1.3}
+
+/* ===========================================
+   NAV + EDIT chrome (outside stage)
+   =========================================== */
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent-soft);z-index:1200;transition:width .3s var(--ease)}
+.pager{position:fixed;right:22px;bottom:20px;z-index:1200;font-family:var(--font-mono);font-size:15px;color:#cfd1cb;background:rgba(20,22,24,.72);padding:7px 14px;border-radius:20px;letter-spacing:.08em}
+.edit-hotzone{position:fixed;top:0;left:0;width:80px;height:80px;z-index:10000;cursor:pointer}
+.edit-toggle{position:fixed;top:16px;left:16px;z-index:10001;width:46px;height:46px;border:none;border-radius:50%;background:rgba(20,22,24,.8);color:#fff;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.edit-toggle.show,.edit-toggle.active{opacity:1;pointer-events:auto}
+.edit-toggle.active{background:var(--hot)}
+[contenteditable="true"]{outline:2px dashed var(--accent-soft);outline-offset:3px;cursor:text}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="edit-hotzone"></div>
+<button class="edit-toggle" id="editToggle" title="编辑模式 (E)">✏️</button>
+
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+
+<!-- ============ SLIDE 1 · COVER ============ -->
+<section class="slide cover active">
+  <svg class="motif" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" fill="none">
+    <path d="M0 200 Q 120 60 240 200 T 480 200 T 720 200 T 960 200 T 1200 200 T 1440 200 T 1680 200 T 1920 200" stroke="#7A8A6E" stroke-opacity=".38" stroke-width="2.5"/>
+    <path d="M0 900 Q 160 1040 320 900 T 640 900 T 960 900 T 1280 900 T 1600 900 T 1920 900" stroke="#7A8A6E" stroke-opacity=".28" stroke-width="2"/>
+  </svg>
+  <div class="mast"><span><span class="dot"></span>战略研究报告 / STRATEGY BRIEF</span><span>SCALE-R × TVI · 2026</span></div>
+  <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+  <div class="hero">
+    <div class="kick reveal">Repricing the Skill Premium</div>
+    <div class="big reveal">技能溢价的<em>重估</em></div>
+    <div class="cline reveal"></div>
+    <div class="sub-en reveal">The Pricing of Truly Scarce Ability</div>
+    <div class="sub-cn reveal">AI 时代真正稀缺能力的定价机制</div>
+    <div class="thesis reveal">AI 没有消除技能溢价，而是改变了它的<b>来源、持续期与获取者</b>——持续溢价来自领域 × 判断 × 责任 × 可复制净杠杆的能力组合。</div>
+  </div>
+  <div class="chips">
+    <div class="chip reveal"><div class="c-k">第一章</div><div class="c-t">溢价是一组价值获取机制</div><div class="c-d">同时看六类结果，而非单一工资差</div></div>
+    <div class="chip reveal"><div class="c-k">第二章</div><div class="c-t">任务先变、岗位后调</div><div class="c-d">暴露 ≠ 采用 ≠ 净绩效 ≠ 薪酬</div></div>
+    <div class="chip reveal"><div class="c-k">第三章</div><div class="c-t">被商品化的是标准任务</div><div class="c-d">价值迁向验证、责任与系统</div></div>
+    <div class="chip reveal"><div class="c-k">第四章</div><div class="c-t">稀缺 = 可验证的能力组合</div><div class="c-d">SCALE-R · 四象限 · 五层金字塔</div></div>
+  </div>
+  <div class="cfoot">任务会被自动化，岗位未必消失 · 稀缺来自可验证的能力组合</div>
+</section>
+
+<!-- ============ SLIDE 2 · 核心判断 ============ -->
+<section class="slide content">
+  <svg class="wave-sig" viewBox="0 0 190 44"><path d="M0 22 Q 24 2 48 22 T 96 22 T 144 22 T 190 22" fill="none" stroke="#7A8A6E" stroke-width="2.5"/></svg>
+  <div class="head">
+    <div class="kicker reveal">核心结论</div>
+    <div class="title reveal">核心判断</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body" style="top:300px">
+    <div class="panel reveal" style="margin-bottom:34px">
+      <p style="font-family:var(--font-serif);font-weight:700;font-size:30px;color:var(--ink);line-height:1.35;margin-bottom:14px">AI 没有简单消除技能溢价，而是改变了溢价的<span class="em">来源、持续期与获取者</span>。</p>
+      <p style="font-family:var(--font-sans);font-weight:300;font-size:23px;color:var(--dim);line-height:1.4">知识、代码、内容、常规分析的边际供给大增后，“生成一个合格答案”正接近<span class="emk">基础设施</span>。</p>
+    </div>
+    <p class="reveal" style="font-family:var(--font-serif);font-weight:700;font-size:26px;color:var(--ink);margin-bottom:20px">仍能获得持续溢价的，是这样一组能力组合：</p>
+    <div class="tiles reveal" style="margin-bottom:34px">
+      <div class="tile" style="background:var(--c-blue)"><div class="tt" style="font-size:22px">领域知识嵌入高价值情境</div></div>
+      <div class="tile" style="background:var(--c-teal)"><div class="tt" style="font-size:22px">定义问题、识别模型边界</div></div>
+      <div class="tile" style="background:var(--c-gold)"><div class="tt" style="font-size:22px">校准输出、承担责任</div></div>
+      <div class="tile" style="background:var(--c-red)"><div class="tt" style="font-size:22px">协调多方、编排人机系统</div></div>
+    </div>
+    <div class="statement reveal" style="height:120px"><div class="t">把人机系统转化为可复制净结果的能力，才是稀缺租金的真正来源。</div></div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">02 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 3 · 三项修正 ============ -->
+<section class="slide content">
+  <svg class="wave-sig" viewBox="0 0 190 44"><path d="M0 22 Q 24 2 48 22 T 96 22 T 144 22 T 190 22" fill="none" stroke="#7A8A6E" stroke-width="2.5"/></svg>
+  <div class="head">
+    <div class="kicker reveal">核心结论</div>
+    <div class="title reveal">中心命题：有条件支持，需三项修正</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body stagger" style="top:300px">
+    <div class="panel" style="margin-bottom:22px">
+      <div class="panel-lbl">01 · 专业知识不整体贬值</div>
+      <p style="font-family:var(--font-sans);font-size:22px;color:var(--dim);line-height:1.4">从“答案库存”转为验证、异常处置和责任判断的基础。</p>
+    </div>
+    <div class="panel" style="margin-bottom:22px">
+      <div class="panel-lbl">02 · “人类特质”不自动升值</div>
+      <p style="font-family:var(--font-sans);font-size:22px;color:var(--dim);line-height:1.4">判断力、创造力、共情、影响力，只有在高价值、高风险、长期承诺或复杂协同情境中，并能以行为与结果识别时，才形成溢价。</p>
+    </div>
+    <div class="panel" style="margin-bottom:26px">
+      <div class="panel-lbl">03 · 价值创造 ≠ 价值分配</div>
+      <p style="font-family:var(--font-sans);font-size:22px;color:var(--dim);line-height:1.4">AI 提高某项任务绩效，并不保证员工获得基本工资、奖金、晋升或稳定性回报。</p>
+    </div>
+    <div class="statement" style="height:120px"><div class="t" style="font-size:26px">AI 首先压缩的不是所有低技能劳动，而是：目标清晰、上下文可编码、评价标准稳定、错误成本可控的任务。</div></div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">03 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 4 · 图表01 溢价变化逻辑 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">核心结论 · 图表 01</div>
+    <div class="title reveal">AI 时代技能溢价变化逻辑</div>
+    <div class="subtitle reveal">标准答案供给扩张只是起点；净价值、责任与分配机制共同决定最终溢价</div>
+  </div>
+  <div class="body reveal" style="top:360px">
+    <div class="flow">
+      <div class="node"><div class="box" style="background:var(--c-blue)"><div class="bt">AI 能力扩散</div></div><div class="sub">知识/代码/内容<br>边际供给增加</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="box" style="background:var(--c-blue)"><div class="bt">任务供给曲线右移</div></div><div class="sub">标准任务价格下降<br>复杂任务相对升值</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="box" style="background:var(--c-teal)"><div class="bt">岗位与流程重新组合</div></div><div class="sub">数据·流程·权限<br>审查·异常·RACI</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="box" style="background:var(--c-gold)"><div class="bt">风险调整净结果</div></div><div class="sub">收入·质量·风险<br>扣除全成本</div></div>
+      <div class="arrow">→</div>
+      <div class="node"><div class="box" style="background:var(--c-red)"><div class="bt">价值与租金分配</div></div><div class="sub">工资·奖金·价格<br>利润·学习·编制</div></div>
+    </div>
+  </div>
+  <div class="body reveal" style="top:680px">
+    <div style="border:2px solid var(--ink);border-radius:16px;padding:26px 40px;text-align:center;max-width:1400px;margin:0 auto">
+      <p style="font-family:var(--font-sans);font-weight:700;font-size:22px;color:var(--dim);margin-bottom:8px">持续溢价 ≠ 会用工具</p>
+      <p style="font-family:var(--font-serif);font-weight:700;font-size:28px;color:var(--hot)">持续溢价 = 领域深度 × 问题选择 × 校准判断 × 责任 × 可复制净杠杆</p>
+    </div>
+  </div>
+  <div class="foot"><span>依据：E01、E03、E06、E25—E30、E67</span><span class="src">04 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 5 · 第一章 DIVIDER ============ -->
+<section class="slide divider">
+  <svg class="motif" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" fill="none">
+    <path d="M0 320 Q 160 180 320 320 T 640 320 T 960 320 T 1280 320 T 1600 320 T 1920 320" stroke="#7A8A6E" stroke-opacity=".30" stroke-width="2.5"/>
+    <path d="M0 760 Q 120 900 240 760 T 480 760 T 720 760 T 960 760 T 1200 760 T 1440 760 T 1680 760 T 1920 760" stroke="#7A8A6E" stroke-opacity=".22" stroke-width="2"/>
+  </svg>
+  <div class="chnum">01</div>
+  <div class="num reveal">第一章 · CHAPTER ONE</div>
+  <div class="accent-bar"></div>
+  <div class="dtitle reveal">技能溢价不是一项工资差，<br>而是一组价值获取机制</div>
+  <div class="concl reveal">
+    <div class="lbl">本章结论</div>
+    <p>传统“高技能”获得溢价，不只因知识稀缺，还因教育资格提供可信信号、岗位配置决策权、制度限定供给、经验积累隐性知识、组织分配影响力。</p>
+    <p>AI 改变其中的知识与执行供给，却不会同时消除责任、信任、法规、议价和组织权力。</p>
+    <p class="key">因此，技能价值变化必须同时观察六类结果：市场工资、企业内部薪酬、稳定性、晋升、影响力和创业价值。</p>
+  </div>
+</section>
+
+<!-- ============ SLIDE 6 · 五个来源 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第一章</div>
+    <div class="title reveal">传统技能溢价的五个来源</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body" style="top:310px;display:flex;gap:44px">
+    <div class="src-list reveal" style="flex:1.15">
+      <div class="src-row"><div class="no">1</div><div class="tx"><div class="st">供给限制</div><div class="sd">长周期教育、资格考试、地理与行业准入，使能力难以快速扩张</div></div></div>
+      <div class="src-row"><div class="no">2</div><div class="tx"><div class="st">边际生产率</div><div class="sd">专业人员完成更复杂任务、降低错误、提高资本利用率</div></div></div>
+      <div class="src-row"><div class="no">3</div><div class="tx"><div class="st">信号与筛选</div><div class="sd">学历、品牌雇主、工作年限降低企业判断候选人质量的成本</div></div></div>
+      <div class="src-row"><div class="no">4</div><div class="tx"><div class="st">制度与责任</div><div class="sd">签字权、执照、合规责任与职位授权，把任务与角色绑定</div></div></div>
+      <div class="src-row"><div class="no">5</div><div class="tx"><div class="st">租金分配与议价</div><div class="sd">同样产出由谁获得，取决于替代选项、制度、竞争与治理</div></div></div>
+    </div>
+    <div class="dark-box reveal" style="flex:.85">
+      <h4>AI 的冲击不对称</h4>
+      <div class="row"><span class="tagm" style="color:var(--hot-soft)">最快 ↓</span>降低信息搜寻、初稿与标准执行的边际成本</div>
+      <div class="row"><span class="tagm" style="color:#d3c48f">较慢 →</span>改变执照、法律责任、客户承诺与职位授权</div>
+      <div class="row"><span class="tagm" style="color:var(--accent-hi)">更不 ✕</span>直接决定利润如何进入工资</div>
+      <div class="row" style="margin-top:22px;color:var(--accent-hi);font-weight:700">由此产生过渡期：</div>
+      <div class="row">任务价值已变、岗位工资未变；产出上升、收入不变；工具普及、组织结果有限。</div>
+    </div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">06 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 7 · 第一章 意味着什么 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第一章 · 打工人视角</div>
+    <div class="title reveal">这对你意味着什么</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body reveal" style="top:300px;bottom:150px">
+    <div class="cols" style="height:100%">
+      <div class="col biz">
+        <div class="ch">正在发生什么</div>
+        <ul>
+          <li>企业开始区分“哪类溢价在变”，不再用一个工资数字解释一切。</li>
+          <li>市场稀缺 → 稀缺津贴；项目净收益 → 奖金。</li>
+          <li>高风险签字 → 责任薪酬；跨周期平台价值 → 长期激励。</li>
+          <li>竞争优势从“是否拥有工具”转向四类互补资产：专有数据、重构流程、能担责的人、稳定复制的治理。</li>
+        </ul>
+      </div>
+      <div class="col worker">
+        <div class="ch">你可以怎么做</div>
+        <ul>
+          <li>别只盯“眼前工资”判断自己是否升值——技能价值体现在六类结果上，工资有粘性，短期不变不代表没有增值。</li>
+          <li>主动积累难被 AI 复制的部分：责任签字、客户信任、制度授权与组织影响力。</li>
+          <li>把自己嵌入“价值分配链”，而非只做可被商品化的执行环节。</li>
+          <li>用可观察的证据（决策记录、项目结果、跨部门影响）替代“我很努力/资历长”的模糊信号。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">07 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 8 · 第二章 DIVIDER ============ -->
+<section class="slide divider">
+  <svg class="motif" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" fill="none">
+    <path d="M0 320 Q 160 180 320 320 T 640 320 T 960 320 T 1280 320 T 1600 320 T 1920 320" stroke="#7A8A6E" stroke-opacity=".30" stroke-width="2.5"/>
+    <path d="M0 760 Q 120 900 240 760 T 480 760 T 720 760 T 960 760 T 1200 760 T 1440 760 T 1680 760 T 1920 760" stroke="#7A8A6E" stroke-opacity=".22" stroke-width="2"/>
+  </svg>
+  <div class="chnum">02</div>
+  <div class="num reveal">第二章 · CHAPTER TWO</div>
+  <div class="accent-bar"></div>
+  <div class="dtitle reveal">AI 正在移动技能供给曲线，<br>但工资与岗位调整更慢</div>
+  <div class="concl reveal">
+    <div class="lbl">本章结论</div>
+    <p>AI 不同于过去办公软件：它进入非例行认知任务、以自然语言降低使用门槛，并可作为智能体跨步骤调用工具。</p>
+    <p>但模型仍有参差不齐的能力边界，端到端收益受上下文、验证与组织系统约束。</p>
+    <p class="key">最可能的顺序：任务方式改变 → 工作流重构 → 岗位组合调整 → 招聘与职业入口变化 → 工资与制度再定价。</p>
+  </div>
+</section>
+
+<!-- ============ SLIDE 9 · 图表04 证据链 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第二章 · 图表 04</div>
+    <div class="title reveal">从 AI 暴露到员工薪酬的五段证据链</div>
+    <div class="subtitle reveal">每一段都需要独立数据与反事实；任何跨段推断都可能夸大</div>
+  </div>
+  <div class="body reveal" style="top:400px">
+    <div class="flow" style="align-items:flex-start">
+      <div class="node"><div class="chain-edge"></div><div class="box" style="background:var(--c-blue);height:130px"><div class="bt">暴露</div><div class="sub" style="margin-top:6px">技术可能触及</div></div></div>
+      <div class="arrow" style="height:130px;color:var(--accent);margin-top:26px">→</div>
+      <div class="node"><div class="chain-edge">工具可得/政策</div><div class="box" style="background:var(--c-blue);height:130px"><div class="bt">采用</div><div class="sub" style="margin-top:6px">企业/员工实际接入</div></div></div>
+      <div class="arrow" style="height:130px;color:var(--accent);margin-top:26px">→</div>
+      <div class="node"><div class="chain-edge">真实使用日志</div><div class="box" style="background:var(--c-blue);height:130px"><div class="bt">任务</div><div class="sub" style="margin-top:6px">具体人机分工</div></div></div>
+      <div class="arrow" style="height:130px;color:var(--accent);margin-top:26px">→</div>
+      <div class="node"><div class="chain-edge">可比基线/对照</div><div class="box" style="background:var(--c-blue);height:130px"><div class="bt">净绩效</div><div class="sub" style="margin-top:6px">质量、风险与全成本</div></div></div>
+      <div class="arrow" style="height:130px;color:var(--accent);margin-top:26px">→</div>
+      <div class="node"><div class="chain-edge">制度、议价、分配</div><div class="box" style="background:var(--c-blue);height:130px"><div class="bt">薪酬/流动</div><div class="sub" style="margin-top:6px">工资、奖金、晋升、留任</div></div></div>
+    </div>
+  </div>
+  <div class="body reveal" style="top:730px">
+    <div style="background:var(--c-gold);border-radius:16px;padding:26px 40px;text-align:center;max-width:1300px;margin:0 auto">
+      <span style="font-family:var(--font-serif);font-weight:700;font-size:23px;color:var(--node-ink)">当前公开证据：任务绩效证据较强</span>
+      <span style="color:var(--dim);margin:0 16px">|</span>
+      <span style="font-family:var(--font-serif);font-weight:700;font-size:23px;color:var(--hot)">完整“同一员工 U—T—P—W”因果闭环 = 0 项</span>
+    </div>
+  </div>
+  <div class="foot"><span>设计目的：阻止从“可做”直接跳到“会裁员/会加薪”。依据：E25、E29、E30、E65、E73</span><span class="src">09 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 10 · 第二章 意味着什么 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第二章 · 打工人视角</div>
+    <div class="title reveal">这对你意味着什么</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body reveal" style="top:300px;bottom:150px">
+    <div class="cols" style="height:100%">
+      <div class="col biz">
+        <div class="ch">正在发生什么</div>
+        <ul>
+          <li>企业评估岗位调整时，会问四个问题：移除了哪些任务？剩余任务的价值与责任是否上升？</li>
+          <li>需求会否扩大？下一代专家如何获得足够练习？</li>
+          <li>只算“减多少人”的 AI 效率目标，并不是完整决策——裁编只是多个结果之一。</li>
+          <li>岗位入口与练习结构正被重新设计，初级成长路径可能因此改变。</li>
+        </ul>
+      </div>
+      <div class="col worker">
+        <div class="ch">你可以怎么做</div>
+        <ul>
+          <li>“职业被 AI 暴露” ≠ 岗位消失，更 ≠ 你会失业；决定去留的是剩余任务的价值与责任。</li>
+          <li>主动把工作从被自动化的生成、检索、初稿，转向验证、异常处理、客户承诺与跨系统协调。</li>
+          <li>警惕初级练习被压缩：AI 能把新手迅速带到平均水平，却可能删掉成为专家所需的基础训练。</li>
+          <li>主动争取导师、影子决策与异常案例的学习机会，为承担更大问题范围做准备。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">10 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 11 · 第三章 DIVIDER ============ -->
+<section class="slide divider">
+  <svg class="motif" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" fill="none">
+    <path d="M0 320 Q 160 180 320 320 T 640 320 T 960 320 T 1280 320 T 1600 320 T 1920 320" stroke="#7A8A6E" stroke-opacity=".30" stroke-width="2.5"/>
+    <path d="M0 760 Q 120 900 240 760 T 480 760 T 720 760 T 960 760 T 1200 760 T 1440 760 T 1680 760 T 1920 760" stroke="#7A8A6E" stroke-opacity=".22" stroke-width="2"/>
+  </svg>
+  <div class="chnum">03</div>
+  <div class="num reveal">第三章 · CHAPTER THREE</div>
+  <div class="accent-bar"></div>
+  <div class="dtitle reveal">被商品化的是标准任务，<br>不是所有专业知识</div>
+  <div class="concl reveal">
+    <div class="lbl">本章结论</div>
+    <p>知识获取成本下降，会压缩“记忆、检索、初稿、模板化分析”的独立溢价；</p>
+    <p>专业价值将向情境解释、验证、异常处理、因果推理、客户责任和制度签字迁移。</p>
+    <p class="key">顶尖专家与普通执行者可能分化：前者用 AI 扩大问题范围，后者的标准产出更易被平台化。任务可自动化 ≠ 岗位必然消失。</p>
+  </div>
+</section>
+
+<!-- ============ SLIDE 12 · 三个价值边界 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第三章</div>
+    <div class="title reveal">专业知识的三个价值边界</div>
+    <div class="subtitle reveal">专业知识继续形成溢价，需至少满足三项之一</div>
+  </div>
+  <div class="body reveal" style="top:370px">
+    <div class="tiles">
+      <div class="tile" style="background:var(--c-blue)"><div class="idx">其一</div><div class="tt">知识难以显性化</div><div class="td">来自长期案例、系统历史和隐性约束</div></div>
+      <div class="tile" style="background:var(--c-gold)"><div class="idx">其二</div><div class="tt">输出需要责任闭环</div><div class="td">错误会产生重大财务、法律、健康或声誉损失</div></div>
+      <div class="tile" style="background:var(--c-teal)"><div class="idx">其三</div><div class="tt">知识参与问题选择</div><div class="td">决定什么证据重要、哪些假设可接受、何时停止或升级</div></div>
+    </div>
+  </div>
+  <div class="body reveal" style="top:640px">
+    <div class="panel">
+      <div class="panel-lbl">AI 时代专家的关键能力：边界识别</div>
+      <p style="font-family:var(--font-sans);font-size:20px;color:var(--dim);line-height:1.45;margin-bottom:12px">BCG 实验：758 名顾问在模型能力边界<b style="color:var(--ink)">内</b>完成更多任务、速度与质量提高；在边界<b style="color:var(--ink)">外</b>任务，AI 组正确率反而下降约 19 个百分点。</p>
+      <p style="font-family:var(--font-sans);font-size:20px;color:var(--dim);line-height:1.45;margin-bottom:12px">反例（METR）：熟悉大型代码库的资深开发者，用 2025 年初工具实际完成时间约 +19%，而自认为快了约 20%——隐性上下文与验证成本可抵消生成速度。</p>
+      <p style="font-family:var(--font-serif);font-weight:700;font-size:22px;color:var(--ink)">→ 边界识别不是抽象的“批判性思维”，而是领域证据、校准记录与后果责任的组合。</p>
+    </div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">12 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 13 · 能力通胀与两极分化 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第三章</div>
+    <div class="title reveal">能力通胀与专家两极分化</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body reveal" style="top:300px">
+    <div class="panel" style="margin-bottom:26px">
+      <p style="font-family:var(--font-sans);font-size:21px;color:var(--dim);line-height:1.45;margin-bottom:8px"><span class="emk">能力通胀：</span>AI 让更多人生成“看起来专业”的输出——报告更长、代码更多、方案更多，但可验证质量未必同步上升。</p>
+      <p style="font-family:var(--font-sans);font-size:21px;color:var(--dim);line-height:1.45">输出量失去信号功能 → 企业须转向更接近结果的证据：采用率、下游质量、返工、事故、客户行为、长期维护、被放弃的坏决策。</p>
+    </div>
+    <p class="reveal" style="font-family:var(--font-serif);font-weight:700;font-size:24px;color:var(--ink);margin-bottom:18px">专家的三层分化</p>
+    <div class="tiles reveal">
+      <div class="tile" style="background:var(--c-red)"><div class="tt">答案型专家</div><div class="td">依赖知识库存与标准交付</div><span class="tag">→ 溢价受压</span></div>
+      <div class="tile" style="background:var(--c-gold)"><div class="tt">责任型专家</div><div class="td">知识用于高风险验证、例外与签字</div><span class="tag">→ 溢价持续</span></div>
+      <div class="tile" style="background:var(--c-teal)"><div class="tt">系统型专家</div><div class="td">领域×AI×数据×流程×组织变革，组合为可复制系统</div><span class="tag">→ 最高杠杆溢价</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>Claude Code 约 40 万次会话：专家提供更长背景、委托更大范围、更能恢复错误，支持“领域知识 × AI 杠杆”互补——但不能据此推导工资。</span><span class="src">13 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 14 · 图表07 散点 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第三章 · 图表 07</div>
+    <div class="title reveal">从答案型专家到系统型专家</div>
+    <div class="subtitle reveal">专业价值从“答案库存”迁向校准、责任与系统复用；位置为概念判断</div>
+  </div>
+  <div class="body reveal" style="top:360px">
+    <div class="scatter" style="height:520px;margin:0 260px 0 220px">
+      <div class="yax"></div><div class="xax"></div>
+      <!-- axis titles -->
+      <div style="position:absolute;left:-150px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;font-family:var(--font-mono);font-weight:700;font-size:19px;color:var(--ink)">↑ 判断责任与情境嵌入</div>
+      <div style="position:absolute;right:0;bottom:-42px;font-family:var(--font-mono);font-weight:700;font-size:19px;color:var(--ink)">任务范围与可复制杠杆 →</div>
+      <!-- dots (left% from x-axis origin, bottom% up) -->
+      <div class="dot" style="left:30%;bottom:30%;background:var(--c-red);border:3px solid #c9a9b0"></div>
+      <div class="lbl" style="left:30%;bottom:30%;transform:translate(-115%,50%);text-align:right"><div class="n">答案型专家</div><div class="s">标准检索 / 初稿</div></div>
+      <div class="dot" style="left:33%;bottom:72%;background:var(--c-gold);border:3px solid #cfc395"></div>
+      <div class="lbl" style="left:33%;bottom:72%;transform:translate(-115%,50%);text-align:right"><div class="n">责任型专家</div><div class="s">高风险例外 / 签字</div></div>
+      <div class="dot" style="left:72%;bottom:83%;background:var(--c-teal);border:3px solid #a8c4b1"></div>
+      <div class="lbl" style="left:72%;bottom:83%;transform:translate(-115%,50%);text-align:right"><div class="n">系统型专家</div><div class="s">领域 × AI × 流程 × 治理</div></div>
+      <div class="dot" style="left:66%;bottom:45%;background:var(--c-blue);border:3px solid #a9c0cc"></div>
+      <div class="lbl" style="left:66%;bottom:45%;transform:translate(18%,50%);text-align:left"><div class="n">工具型放大者</div><div class="s">高产出但责任有限</div></div>
+      <!-- AI供给扩张 arrow: horizontal, pointing left (ref P2) -->
+      <svg style="position:absolute;left:28%;bottom:16%;width:255px;height:24px;overflow:visible;z-index:3" viewBox="0 0 255 24" fill="none">
+        <line x1="250" y1="12" x2="10" y2="12" stroke="#A65A44" stroke-width="3"/>
+        <path d="M10 12 L28 4 M10 12 L28 20" stroke="#A65A44" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div style="position:absolute;left:calc(28% + 268px);bottom:16%;transform:translateY(50%);font-family:var(--font-mono);font-weight:700;font-size:18px;color:var(--hot)">AI 供给扩张</div>
+    </div>
+  </div>
+  <div class="foot"><span>依据：E04、E22、E27、E35—E36；概念图，不代表人员分布。</span><span class="src">14 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 15 · 第三章 意味着什么 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第三章 · 打工人视角</div>
+    <div class="title reveal">这对你意味着什么</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body reveal" style="top:300px;bottom:150px">
+    <div class="cols" style="height:100%">
+      <div class="col biz">
+        <div class="ch">正在发生什么</div>
+        <ul>
+          <li>企业不会取消专业序列，而是在重写专业标准。</li>
+          <li>晋升证据从“知道多少、做过多少年”，转为：能否解释因果、处理例外、校准模型、做高质量取舍、承担后果，并把方法复制给组织。</li>
+          <li>评价正从“输出量”转向更接近结果的证据：采用率、下游质量、返工、事故、长期维护、被放弃的坏决策。</li>
+          <li>同一时点的正/负结果不会被永久写入能力模型——模型版本与任务环境会被一并记录。</li>
+        </ul>
+      </div>
+      <div class="col worker">
+        <div class="ch">你可以怎么做</div>
+        <ul>
+          <li>别用“看起来专业”的产出量证明价值——AI 时代它已贬值；要把能力落到可验证结果上。</li>
+          <li>从“答案型”走向“责任型/系统型”：把领域知识用于高风险验证、例外处置与签字，或组合成可复制的人机系统。</li>
+          <li>刻意练就“边界识别”：知道何时信任、何时核验、何时拒绝模型建议——它 = 领域证据 + 校准记录 + 后果责任。</li>
+          <li>沉淀个人的校准记录与决策日志，让“判断质量”变得可被看见、可被定价。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">15 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 16 · 第四章 DIVIDER ============ -->
+<section class="slide divider">
+  <svg class="motif" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" fill="none">
+    <path d="M0 320 Q 160 180 320 320 T 640 320 T 960 320 T 1280 320 T 1600 320 T 1920 320" stroke="#7A8A6E" stroke-opacity=".30" stroke-width="2.5"/>
+    <path d="M0 760 Q 120 900 240 760 T 480 760 T 720 760 T 960 760 T 1200 760 T 1440 760 T 1680 760 T 1920 760" stroke="#7A8A6E" stroke-opacity=".22" stroke-width="2"/>
+  </svg>
+  <div class="chnum">04</div>
+  <div class="num reveal">第四章 · CHAPTER FOUR</div>
+  <div class="accent-bar"></div>
+  <div class="dtitle reveal">真正稀缺的不是“人类特质”，<br>而是可验证的能力组合</div>
+  <div class="concl reveal">
+    <div class="lbl">本章结论</div>
+    <p>AI 时代的战略稀缺能力不是一串软技能，而是四类组合：选择与判断、跨域系统整合、责任与信任、工作系统重构。</p>
+    <p>每项能力只有同时具备：有效稀缺、可识别、可产生商业价值、相对 AI 韧性，才值得长期投资。</p>
+    <p class="key">创造力、审美、共情或沟通，若脱离领域、情境和结果，也会被商品化。</p>
+  </div>
+</section>
+
+<!-- ============ SLIDE 17 · 图表08 十二项能力 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第四章 · 图表 08</div>
+    <div class="title reveal">十二项战略稀缺能力及其定价条件</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body reveal" style="top:290px">
+    <table class="tbl" style="font-size:15px">
+      <colgroup><col style="width:15%"><col style="width:7%"><col style="width:7%"><col style="width:7%"><col style="width:9%"><col style="width:7%"><col style="width:8%"><col style="width:30%"></colgroup>
+      <tr><th>能力组合</th><th>稀缺性</th><th>可培养</th><th>可识别</th><th>商业价值</th><th>AI韧性</th><th>专业依赖</th><th>持续溢价条件</th></tr>
+      <tr><td class="lead">高价值问题发现与定义</td><td>中高</td><td>中</td><td>中</td><td>高</td><td>中高</td><td>高</td><td>问题价值差异大且有结果所有权</td></tr>
+      <tr><td class="lead">不完整信息下的校准判断</td><td>高</td><td>中</td><td>中高</td><td>高</td><td>高</td><td>高</td><td>有预测、置信度、复盘和后果</td></tr>
+      <tr><td class="lead">战略取舍与资源配置</td><td>高</td><td>中低</td><td>中</td><td>高</td><td>高</td><td>高</td><td>资本约束、不可逆、长期结果</td></tr>
+      <tr><td class="lead">因果推理与反事实设计</td><td>中高</td><td>中高</td><td>高</td><td>高</td><td>中</td><td>高</td><td>能改变决策而非只做解释</td></tr>
+      <tr><td class="lead">系统思考与瓶颈识别</td><td>中高</td><td>中</td><td>中</td><td>高</td><td>中高</td><td>中高</td><td>端到端净结果和跨系统边界</td></tr>
+      <tr><td class="lead">跨领域整合</td><td>高</td><td>中</td><td>中</td><td>高</td><td>中高</td><td>高</td><td>多域冲突真实存在且能落地</td></tr>
+      <tr><td class="lead">新概念/业务模式构建</td><td>高</td><td>中低</td><td>中</td><td>高但方差大</td><td>中高</td><td>中高</td><td>市场验证、资本纪律、迭代速度</td></tr>
+      <tr><td class="lead">AI工作流与人机编排</td><td>阶段性高</td><td>高</td><td>高</td><td>高</td><td>中</td><td>高</td><td>跨团队复用、净收益、治理完整</td></tr>
+      <tr><td class="lead">复杂利益相关者与谈判</td><td>情境高</td><td>中</td><td>中</td><td>高</td><td>中高</td><td>中高</td><td>长期承诺、高风险、多方冲突</td></tr>
+      <tr><td class="lead">信任与组织动员</td><td>情境高</td><td>中</td><td>中低</td><td>高</td><td>高</td><td>中</td><td>采用、留任、客户与变革结果可证</td></tr>
+      <tr><td class="lead">伦理、风险与责任判断</td><td>高</td><td>中</td><td>高</td><td>高</td><td>高</td><td>高</td><td>有正式授权、事故和签字责任</td></tr>
+      <tr><td class="lead">元认知与快速更新</td><td>中高</td><td>高</td><td>中高</td><td>中高</td><td>中高</td><td>中</td><td>能跨模型/场景迁移而非课程完成</td></tr>
+    </table>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">17 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 18 · SCALE-R 模型 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第四章</div>
+    <div class="title reveal">SCALE-R 能力溢价重估模型</div>
+    <div class="subtitle reveal">SCALE-R 评估某能力在组织 o、时点 t 的<span class="emk">相对溢价潜力</span>，不是员工工资。</div>
+  </div>
+  <div class="body reveal" style="top:360px">
+    <div class="formula" style="margin-bottom:34px">ln(能力溢价潜力) = 常数 + 稀缺性 + 价值贡献 + 判断责任 + 净杠杆 + 情境嵌入 − 可替代性</div>
+    <div class="vars" style="margin-bottom:34px">
+      <div class="var" style="background:var(--c-blue)"><div class="vk">S</div><div class="vn">有效稀缺性</div><div class="vw">15%</div></div>
+      <div class="var" style="background:var(--c-teal)"><div class="vk">C</div><div class="vn">价值贡献</div><div class="vw">25%</div></div>
+      <div class="var" style="background:var(--c-gold)"><div class="vk">A</div><div class="vn">判断责任</div><div class="vw">15%</div></div>
+      <div class="var" style="background:var(--c-blue)"><div class="vk">L</div><div class="vn">净杠杆</div><div class="vw">20%</div></div>
+      <div class="var" style="background:var(--c-teal)"><div class="vk">E</div><div class="vn">情境嵌入</div><div class="vw">10%</div></div>
+      <div class="var" style="background:var(--c-red)"><div class="vk">R</div><div class="vn">可替代性(反向)</div><div class="vw">15%</div></div>
+    </div>
+    <div class="panel">
+      <p style="font-family:var(--font-sans);font-size:20px;color:var(--dim);line-height:1.4;margin-bottom:8px">数据不足时用 1—5 分行为锚点 + 加权几何平均排序；权重是试点起点，不是市场定律。</p>
+      <p style="font-family:var(--font-serif);font-weight:700;font-size:22px;color:var(--ink)">几何平均防止“很稀缺”掩盖低价值，也防止高产出掩盖高风险。</p>
+    </div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">18 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 19 · 图表09 雷达 + 三闸门 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第四章 · 图表 09</div>
+    <div class="title reveal">SCALE-R 能力溢价模型</div>
+    <div class="subtitle reveal">六变量衡量相对溢价潜力；三个闸门决定能否进入薪酬</div>
+  </div>
+  <!-- radar SVG (S top, then C A L E R clockwise). center 460,300 r 220 -->
+  <svg class="reveal" style="position:absolute;left:120px;top:330px;width:640px;height:640px;z-index:2" viewBox="0 0 700 700">
+    <g transform="translate(350,340)" font-family="Space Mono" >
+      <!-- rings -->
+      <polygon points="0,-220 190.5,-110 190.5,110 0,220 -190.5,110 -190.5,-110" fill="none" stroke="#cbccc6" stroke-width="1.5"/>
+      <polygon points="0,-145 125.6,-72.5 125.6,72.5 0,145 -125.6,72.5 -125.6,-72.5" fill="none" stroke="#cbccc6" stroke-width="1.2"/>
+      <polygon points="0,-72.6 62.9,-36.3 62.9,36.3 0,72.6 -62.9,36.3 -62.9,-36.3" fill="none" stroke="#cbccc6" stroke-width="1"/>
+      <!-- spokes -->
+      <g stroke="#cbccc6" stroke-width="1">
+        <line x1="0" y1="0" x2="0" y2="-220"/><line x1="0" y1="0" x2="190.5" y2="-110"/><line x1="0" y1="0" x2="190.5" y2="110"/>
+        <line x1="0" y1="0" x2="0" y2="220"/><line x1="0" y1="0" x2="-190.5" y2="110"/><line x1="0" y1="0" x2="-190.5" y2="-110"/>
+      </g>
+      <!-- data profile S0.9 C0.95 A0.5 L1.0 E0.78 R0.82 -->
+      <polygon points="0,-198 181,-104.5 95.3,55 0,220 -148.6,85.8 -156.2,-90.2" fill="rgba(122,138,110,.28)" stroke="#5f6e54" stroke-width="3"/>
+      <!-- axis labels -->
+      <g font-size="20" font-weight="700" fill="#A65A44" text-anchor="middle">
+        <text x="0" y="-250">S</text><text x="238" y="-128">C</text><text x="238" y="150">A</text>
+        <text x="0" y="272">L</text><text x="-238" y="150">E</text><text x="-238" y="-128">R</text>
+      </g>
+      <g font-size="14" fill="#585c5e" text-anchor="middle">
+        <text x="0" y="-230">有效稀缺</text><text x="238" y="-108">价值贡献</text><text x="238" y="170">判断责任</text>
+        <text x="0" y="292">净杠杆</text><text x="-238" y="170">情境嵌入</text><text x="-238" y="-108">反向低可替代</text>
+      </g>
+    </g>
+  </svg>
+  <div class="gates stagger">
+    <div class="gate"><div class="gt">价值闸门</div><div class="gd">C 低于阈值：稀缺也不产生战略溢价</div></div>
+    <div style="text-align:center;color:#9aa2a0;font-size:24px;margin:-8px 0 8px">↓</div>
+    <div class="gate g2"><div class="gt">证据闸门</div><div class="gd">归因不足：只能项目奖/递延，不进固定工资</div></div>
+    <div style="text-align:center;color:#9aa2a0;font-size:24px;margin:-8px 0 8px">↓</div>
+    <div class="gate g3"><div class="gt">治理闸门</div><div class="gd">公平、预算、监管、员工参与与风险上限</div></div>
+  </div>
+  <div class="foot"><span>示例轮廓仅展示方法，不是跨企业基准；R 以低可替代的反向值显示。依据：原创规范性模型。</span><span class="src">19 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 20 · 图表10 评分锚点 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第四章 · 图表 10</div>
+    <div class="title reveal">SCALE-R 变量、观察指标与评分锚点</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body reveal" style="top:300px">
+    <table class="tbl">
+      <colgroup><col style="width:13%"><col style="width:16%"><col style="width:20%"><col style="width:24%"><col style="width:27%"></colgroup>
+      <tr><th>变量</th><th>1 分</th><th>3 分</th><th>5 分</th><th>优先数据</th></tr>
+      <tr><td class="lead">S 有效稀缺</td><td>短期可替代</td><td>招聘/培养数月</td><td>供给极少、替代期长</td><td>合格候选率、招聘周期、培养达标期</td></tr>
+      <tr><td class="lead">C 价值贡献</td><td>局部便利</td><td>业务单元稳定影响</td><td>企业级结果/重大风险/战略选择</td><td>增量收入、质量、客户、资本、风险</td></tr>
+      <tr><td class="lead">A 判断责任</td><td>可逆、低风险</td><td>中等判断和损失</td><td>不可逆、受监管、最终签字</td><td>决策额度、事故上限、升级权</td></tr>
+      <tr><td class="lead">L 净杠杆</td><td>一次性个人节时</td><td>团队复用且净改善</td><td>跨业务平台化、持续扩大</td><td>风险调整产出、复用、总成本</td></tr>
+      <tr><td class="lead">E 情境嵌入</td><td>标准化、少上下文</td><td>本地流程/客户、多方协同</td><td>深度隐性知识、关键关系、变革</td><td>跨域数、关系期限、采用、迁移表现</td></tr>
+      <tr><td class="lead">R 可替代性</td><td>难复制</td><td>部分可复制、需复核</td><td>端到端可复制且风险可接受</td><td>AI独立率、复核、错误、替代供给</td></tr>
+    </table>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">20 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 21 · 图表11 四象限 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第四章 · 图表 11</div>
+    <div class="title reveal">AI 可替代性 × 组织价值 四象限</div>
+    <div class="subtitle reveal">分析单元：任务 × 情境 × 责任，而不是岗位或人</div>
+  </div>
+  <div class="body reveal" style="top:370px">
+    <div class="quad" style="height:500px;margin:0 60px 0 120px">
+      <div class="grid" style="height:100%">
+        <div class="cell" style="background:var(--c-teal)"><div class="qt">Q4 低替代 · 高价值</div><div class="qa">战略投资 / 继任 / 长期激励</div><div class="qe">受监管判断、关键谈判、系统架构</div></div>
+        <div class="cell" style="background:var(--c-blue)"><div class="qt">Q2 高替代 · 高价值</div><div class="qa">重构人机流程</div><div class="qe">客服首轮、代码生成、合同初审</div></div>
+        <div class="cell" style="background:var(--c-flat)"><div class="qt">Q3 低替代 · 低价值</div><div class="qa">简化 / 外包 / 退出</div><div class="qe">稀有旧系统、低频手工例外</div></div>
+        <div class="cell" style="background:var(--c-red)"><div class="qt">Q1 高替代 · 低价值</div><div class="qa">自动化 / 合并 / 停止</div><div class="qe">格式整理、模板邮件、通用摘要</div></div>
+      </div>
+      <div class="axis-x" style="left:0;right:0;bottom:-42px">AI 可替代性 →</div>
+      <div class="axis-y" style="left:-56px;top:50%;transform:translateY(-50%)">↑ 组织价值贡献</div>
+    </div>
+  </div>
+  <div class="foot"><span>依据：SCALE-R 与 C1—C12；象限位置需按真实任务数据复评。Q2（高价值·高替代）最值得你主动重构人机分工。</span><span class="src">21 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 22 · 图表13 金字塔 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第四章 · 图表 13</div>
+    <div class="title reveal">AI 时代五层能力金字塔</div>
+    <div class="subtitle reveal">层级表示价值与责任半径；上层依赖专业执行与基础能力，不是“软技能高于硬技能”</div>
+  </div>
+  <div class="body reveal" style="top:380px;display:flex;align-items:flex-start;justify-content:center;gap:40px">
+    <div class="pyr" style="width:1200px">
+      <div class="lvl" style="background:var(--c-red);width:520px;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)"><span class="lt">L5 战略</span><span class="ld">方向选择、资本配置、新业务与工作系统</span></div>
+      <div class="lvl" style="background:var(--c-gold);width:720px"><span class="lt">L4 组织</span><span class="ld">协同、谈判、信任、变革与资源整合</span></div>
+      <div class="lvl" style="background:var(--c-teal);width:920px"><span class="lt">L3 认知</span><span class="ld">问题定义、因果、系统思考、校准判断</span></div>
+      <div class="lvl" style="background:var(--c-blue);width:1080px"><span class="lt">L2 执行</span><span class="ld">专业任务完成、人机协同、质量控制</span></div>
+      <div class="lvl" style="background:var(--c-flat);width:1200px"><span class="lt">L1 基础</span><span class="ld">AI 与数字工具、安全、数据素养</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:520px">
+      <div style="color:var(--hot);font-size:30px">▲</div>
+      <div style="writing-mode:vertical-rl;font-family:var(--font-mono);font-weight:700;font-size:18px;color:var(--hot);letter-spacing:.1em;margin-top:8px">价值与责任半径</div>
+    </div>
+  </div>
+  <div class="foot"><span>依据：C2—C8；L1 长期趋向门槛化，L3—L5 只有与专业、责任和结果结合才形成溢价。</span><span class="src">22 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 23 · 图表14 五层趋势 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第四章 · 图表 14</div>
+    <div class="title reveal">五层能力的稀缺、培养与溢价趋势</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body reveal" style="top:300px">
+    <table class="tbl" style="font-size:16px">
+      <colgroup><col style="width:9%"><col style="width:22%"><col style="width:17%"><col style="width:8%"><col style="width:8%"><col style="width:12%"><col style="width:9%"><col style="width:15%"></colgroup>
+      <tr><th>层级</th><th>能力定义</th><th>AI 影响</th><th>稀缺</th><th>可培养</th><th>价值贡献</th><th>溢价趋势</th><th>典型人才</th></tr>
+      <tr><td class="lead">L1 基础</td><td>安全用工具、数据素养、验证常识</td><td>快速普及</td><td>低—中</td><td>高</td><td>门槛</td><td>先升后降</td><td>全员</td></tr>
+      <tr><td class="lead">L2 执行</td><td>领域任务、提示/工具组合、质量控制</td><td>强增强/部分替代</td><td>中</td><td>高</td><td>直接产出</td><td>内部分化</td><td>AI 增强型专业人才</td></tr>
+      <tr><td class="lead">L3 认知</td><td>定义问题、因果、系统思考、校准判断</td><td>互补但可部分增强</td><td>中高</td><td>中</td><td>决策质量</td><td>上升</td><td>高判断专家、跨域整合者</td></tr>
+      <tr><td class="lead">L4 组织</td><td>信任、谈判、协同、变革、资源整合</td><td>常规协调可替代、复杂协同互补</td><td>情境高</td><td>中</td><td>采用与组织结果</td><td>条件上升</td><td>变革推动者、超级管理者</td></tr>
+      <tr><td class="lead">L5 战略</td><td>方向选择、资本配置、系统/新业务构建</td><td>放大杠杆与错误</td><td>高</td><td>中低</td><td>企业级与期权</td><td>显著分化</td><td>新业务构建者、AI 系统领导者</td></tr>
+    </table>
+  </div>
+  <div class="body reveal" style="top:700px">
+    <div class="panel">
+      <p style="font-family:var(--font-sans);font-size:19px;color:var(--dim);line-height:1.45">AI 工具使用会像办公软件一样成为基础能力；长期企业不会为“会登录、会提示”持续付津贴，而会<b style="color:var(--ink)">为跨模型迁移、工作流重构和净结果付薪</b>。</p>
+    </div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">23 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 24 · 第四章 意味着什么 ============ -->
+<section class="slide content">
+  <div class="head">
+    <div class="kicker reveal">第四章 · 打工人视角</div>
+    <div class="title reveal">这对你意味着什么</div>
+    <div class="rule reveal"></div>
+  </div>
+  <div class="body reveal" style="top:300px;bottom:150px">
+    <div class="cols" style="height:100%">
+      <div class="col biz">
+        <div class="ch">正在发生什么</div>
+        <ul>
+          <li>企业只为可验证的能力组合付薪，不为抽象的“判断力/创造力”付薪。</li>
+          <li>只讲“未来软技能” → 专业空心化；只看工具与产出 → 价值、风险与组织采用失真——两端都不会被长期奖励。</li>
+          <li>越来越多组织用 SCALE-R 这类框架排序能力投资，并用三道闸门（价值/证据/治理）约束是否进入薪酬。</li>
+          <li>能力模型正同时保留 L2 深度与 L3—L5 责任半径。</li>
+        </ul>
+      </div>
+      <div class="col worker">
+        <div class="ch">你可以怎么做</div>
+        <ul>
+          <li>不要迷信“软技能会自动升值”——创造力、审美、共情脱离领域、情境与结果一样会被商品化。</li>
+          <li>把能力堆成“组合”而非单点：领域深度 + 校准判断 + 责任 + 可复制杠杆，越靠 L3—L5 越抗替代。</li>
+          <li>为你的能力配上可识别证据：预测与置信度、复盘、决策额度、跨团队复用、迁移表现。</li>
+          <li>持续做“元认知与快速更新”：能跨模型/场景迁移，而不是靠某张课程证书或提示技巧。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</span><span class="src">24 / 25</span></div>
+</section>
+
+<!-- ============ SLIDE 25 · 结语 ============ -->
+<section class="slide divider">
+  <svg class="motif" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" fill="none">
+    <path d="M0 300 Q 160 160 320 300 T 640 300 T 960 300 T 1280 300 T 1600 300 T 1920 300" stroke="#7A8A6E" stroke-opacity=".26" stroke-width="2.5"/>
+    <path d="M0 800 Q 120 940 240 800 T 480 800 T 720 800 T 960 800 T 1200 800 T 1440 800 T 1680 800 T 1920 800" stroke="#7A8A6E" stroke-opacity=".2" stroke-width="2"/>
+  </svg>
+  <div class="num reveal" style="top:120px">结语 · 给打工人的启示</div>
+  <div class="accent-bar" style="top:200px"></div>
+  <div style="position:absolute;top:250px;left:120px;right:120px;z-index:2" class="reveal">
+    <div style="font-family:var(--font-serif);font-weight:900;font-size:56px;line-height:1.2;color:var(--ink)">别问“AI 会不会取代我”，<br>要问“我能不能稳定创造别人验证得了的结果”</div>
+  </div>
+  <div style="position:absolute;top:470px;left:120px;right:120px;z-index:2;display:flex;gap:24px" class="stagger">
+    <div style="flex:1;background:var(--paper2);border-left:6px solid var(--accent);padding:26px 28px">
+      <div style="font-family:var(--font-serif);font-weight:700;font-size:24px;color:var(--ink);margin-bottom:10px">① 盯结果，别盯工时</div>
+      <div style="font-family:var(--font-sans);font-weight:400;font-size:19px;color:var(--dim);line-height:1.45">把努力沉淀成可验证的净结果，而不是活动量与“省下的时间”。</div>
+    </div>
+    <div style="flex:1;background:var(--paper2);border-left:6px solid var(--accent);padding:26px 28px">
+      <div style="font-family:var(--font-serif);font-weight:700;font-size:24px;color:var(--ink);margin-bottom:10px">② 往责任与判断走</div>
+      <div style="font-family:var(--font-sans);font-weight:400;font-size:19px;color:var(--dim);line-height:1.45">从可被商品化的执行，转向验证、担责、异常处理与人机编排。</div>
+    </div>
+    <div style="flex:1;background:var(--paper2);border-left:6px solid var(--accent);padding:26px 28px">
+      <div style="font-family:var(--font-serif);font-weight:700;font-size:24px;color:var(--ink);margin-bottom:10px">③ 让价值被看见</div>
+      <div style="font-family:var(--font-sans);font-weight:400;font-size:19px;color:var(--dim);line-height:1.45">用决策记录、项目结果、跨团队复用，替代“我很努力/资历长”。</div>
+    </div>
+  </div>
+  <div style="position:absolute;top:700px;left:120px;right:120px;z-index:2" class="reveal">
+    <p style="font-family:var(--font-sans);font-size:21px;color:var(--dim);line-height:1.5;margin-bottom:16px"><b style="color:var(--hot)">你的护城河</b>不是“会用 AI”，而是<b style="color:var(--ink)">领域深度 × 判断 × 责任 × 可复制净杠杆</b>的能力组合。</p>
+    <p style="font-family:var(--font-sans);font-size:21px;color:var(--dim);line-height:1.5"><b style="color:var(--hot)">与其担心被替代</b>，不如持续更新——能跨模型、跨场景迁移的人，才是真正稀缺、真正被定价的人。</p>
+  </div>
+  <div style="position:absolute;bottom:70px;left:120px;font-family:var(--font-mono);font-size:18px;color:var(--dim);z-index:2">技能溢价的重估 · AI 时代真正稀缺能力的定价机制 · 2026</div>
+</section>
+
+</main>
+</div>
+
+<div class="pager" id="pager">01 / 25</div>
+
+<script>
+/* ===========================================
+   SLIDE CONTROLLER — scale, nav, progress
+   =========================================== */
+class SlidePresentation{
+  constructor(){
+    this.slides=[...document.querySelectorAll('.slide')];
+    this.i=0;
+    this.stage=document.getElementById('deckStage');
+    this.progress=document.getElementById('progress');
+    this.pager=document.getElementById('pager');
+    this.scale();addEventListener('resize',()=>this.scale());
+    this.keys();this.touch();this.wheel();
+    const h=parseInt(location.hash.replace('#',''),10);
+    this.show(Number.isFinite(h)&&h>0?h-1:0);
+    addEventListener('hashchange',()=>{const n=parseInt(location.hash.replace('#',''),10);if(Number.isFinite(n))this.show(n-1)});
+  }
+  scale(){
+    const f=Math.min(innerWidth/1920,innerHeight/1080);
+    const x=(innerWidth-1920*f)/2, y=(innerHeight-1080*f)/2;
+    this.stage.style.transform=`translate(${x}px,${y}px) scale(${f})`;
+  }
+  show(n){
+    this.i=Math.max(0,Math.min(n,this.slides.length-1));
+    this.slides.forEach((s,k)=>{s.classList.toggle('active',k===this.i);s.classList.toggle('visible',k===this.i);});
+    const p=((this.i+1)/this.slides.length)*100;
+    this.progress.style.width=p+'%';
+    this.pager.textContent=String(this.i+1).padStart(2,'0')+' / '+this.slides.length;
+  }
+  next(){this.show(this.i+1)} prev(){this.show(this.i-1)}
+  keys(){addEventListener('keydown',e=>{
+    if(e.target.getAttribute&&e.target.getAttribute('contenteditable'))return;
+    if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();this.next()}
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();this.prev()}
+    else if(e.key==='Home'){this.show(0)} else if(e.key==='End'){this.show(this.slides.length-1)}
+  })}
+  touch(){let x0=null;addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+    addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;
+      if(Math.abs(dx)>50){dx<0?this.next():this.prev()}x0=null},{passive:true})}
+  wheel(){let lock=false;addEventListener('wheel',e=>{if(lock)return;
+    if(Math.abs(e.deltaY)<24)return;lock=true;e.deltaY>0?this.next():this.prev();
+    setTimeout(()=>lock=false,650)},{passive:true})}
+}
+const deck=new SlidePresentation();
+
+/* ===========================================
+   INLINE EDITING (hover top-left / press E)
+   =========================================== */
+const editor={
+  isActive:false,
+  toggle(){
+    this.isActive=!this.isActive;
+    const btn=document.getElementById('editToggle');
+    btn.classList.toggle('active',this.isActive);
+    document.querySelectorAll('.slide .title,.slide .subtitle,.slide p,.slide li,.slide .dtitle,.slide .bt,.slide td,.slide th,.slide .c-t,.slide .c-d,.slide .qt,.slide .qa,.slide .qe,.slide .lt,.slide .ld,.slide .tt,.slide .td,.slide .gt,.slide .gd,.slide .st,.slide .sd,.slide .vn')
+      .forEach(el=>el.setAttribute('contenteditable',this.isActive));
+    if(!this.isActive)localStorage.setItem('deck-edits',document.querySelector('.deck-stage').innerHTML);
+  }
+};
+(function initEdit(){
+  const saved=localStorage.getItem('deck-edits');
+  // (restore intentionally skipped to keep original content authoritative)
+  const hot=document.querySelector('.edit-hotzone');
+  const btn=document.getElementById('editToggle');
+  let t=null;
+  btn.addEventListener('click',()=>editor.toggle());
+  hot.addEventListener('click',()=>editor.toggle());
+  hot.addEventListener('mouseenter',()=>{clearTimeout(t);btn.classList.add('show')});
+  hot.addEventListener('mouseleave',()=>{t=setTimeout(()=>{if(!editor.isActive)btn.classList.remove('show')},400)});
+  btn.addEventListener('mouseenter',()=>clearTimeout(t));
+  btn.addEventListener('mouseleave',()=>{t=setTimeout(()=>{if(!editor.isActive)btn.classList.remove('show')},400)});
+  addEventListener('keydown',e=>{if((e.key==='e'||e.key==='E')&&!e.target.getAttribute('contenteditable'))editor.toggle()});
+})();
+</script>
+</body>
+</html>

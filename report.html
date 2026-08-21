@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>技能溢价的重估 · AI 时代真正稀缺能力的定价机制</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Space+Mono:wght@400;700&family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============ THEME (matches the slide deck) ============ */
+:root{
+  --paper:#EAEAE6;         /* page background */
+  --card:#F6F6F2;          /* content surface */
+  --card2:#EFEFEA;         /* alt surface */
+  --ink:#1f2225;           /* primary text */
+  --ink2:#2b2f32;          /* dark panels */
+  --dim:#585c5e;           /* secondary text */
+  --line:#d3d4ce;          /* hairlines */
+  --accent:#5f6e54;        /* sage */
+  --accent-soft:#7A8A6E;
+  --accent-hi:#a9b89a;
+  --hot:#A65A44;           /* terracotta */
+  --hot-soft:#c07a63;
+  --font-serif:'Noto Serif SC',serif;
+  --font-sans:'Noto Sans SC',sans-serif;
+  --font-mono:'Space Mono',monospace;
+  --font-ital:'Fraunces',serif;
+  --maxw:860px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-sans);font-weight:400;line-height:1.75;font-size:17px;-webkit-font-smoothing:antialiased}
+
+/* ============ TOP BAR ============ */
+.topbar{position:sticky;top:0;z-index:50;height:60px;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-family:var(--font-mono);font-size:14px;letter-spacing:.06em}
+.topbar .brand{display:flex;align-items:center;gap:12px}
+.topbar .dot{width:10px;height:10px;border-radius:50%;background:var(--accent-soft)}
+.topbar .t2{color:#b9bbb4;font-size:12px}
+.topbar .menu-btn{display:none;background:none;border:1px solid #4a4e51;color:var(--paper);padding:6px 12px;border-radius:6px;font-family:var(--font-mono);font-size:13px;cursor:pointer}
+.progress{position:fixed;top:60px;left:0;height:3px;background:var(--accent);width:0;z-index:60;transition:width .1s linear}
+
+/* ============ LAYOUT ============ */
+.layout{max-width:1220px;margin:0 auto;display:grid;grid-template-columns:270px 1fr;gap:40px;padding:0 24px}
+/* TOC */
+.toc{position:sticky;top:84px;align-self:start;height:calc(100vh - 104px);overflow-y:auto;padding:20px 0 40px;font-size:13.5px}
+.toc h4{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:18px 0 10px;font-weight:700}
+.toc a{display:block;color:var(--dim);text-decoration:none;padding:4px 12px 4px 14px;border-left:2px solid transparent;line-height:1.4;transition:all .15s}
+.toc a:hover{color:var(--ink)}
+.toc a.active{color:var(--ink);border-left-color:var(--accent);background:var(--card2);font-weight:500}
+.toc a.sub{padding-left:28px;font-size:12.5px;color:#7c807f}
+.toc::-webkit-scrollbar{width:8px}
+.toc::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+
+/* MAIN */
+main{max-width:var(--maxw);padding:40px 0 120px;min-width:0}
+
+/* ============ COVER / MASTHEAD ============ */
+.masthead{background:var(--ink);color:var(--paper);border-radius:14px;padding:52px 48px;margin-bottom:40px;position:relative;overflow:hidden}
+.masthead svg.wave{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
+.masthead .kick{font-family:var(--font-mono);font-size:15px;letter-spacing:.28em;color:var(--accent-hi);text-transform:uppercase;position:relative}
+.masthead h1{font-family:var(--font-serif);font-weight:900;font-size:56px;line-height:1.08;margin:16px 0 10px;position:relative}
+.masthead h1 em{font-style:normal;color:var(--accent-hi)}
+.masthead .sub{font-family:var(--font-ital);font-style:italic;font-size:26px;color:#c9cbc4;position:relative}
+.masthead .meta{margin-top:26px;padding-top:20px;border-top:1px solid #3a3e41;display:flex;gap:28px;flex-wrap:wrap;font-family:var(--font-mono);font-size:13px;color:#9a9e97;position:relative}
+.masthead .meta b{color:var(--paper);font-weight:700}
+
+/* ============ TYPOGRAPHY ============ */
+.sec{margin:0 0 8px}
+h2.chap{font-family:var(--font-serif);font-weight:900;font-size:34px;line-height:1.25;margin:64px 0 8px;padding-top:20px;border-top:3px solid var(--ink);scroll-margin-top:84px}
+h2.chap .cn{display:block;font-family:var(--font-mono);font-size:14px;letter-spacing:.2em;color:var(--accent);font-weight:700;margin-bottom:10px;text-transform:uppercase}
+h3{font-family:var(--font-serif);font-weight:700;font-size:24px;line-height:1.35;margin:40px 0 14px;color:var(--ink);scroll-margin-top:84px}
+h4{font-family:var(--font-serif);font-weight:700;font-size:19px;margin:28px 0 10px;color:var(--ink)}
+p{margin:0 0 16px}
+p.lead{font-size:19px;color:var(--ink)}
+strong,b{font-weight:700;color:var(--ink)}
+em.hot{font-style:normal;color:var(--hot);font-weight:700}
+em.sage{font-style:normal;color:var(--accent);font-weight:700}
+a.cite{color:var(--accent);text-decoration:none;font-family:var(--font-mono);font-size:.82em;vertical-align:baseline}
+ul,ol{margin:0 0 18px;padding-left:26px}
+li{margin-bottom:8px}
+
+/* confidence badge */
+.conf{display:inline-block;font-family:var(--font-mono);font-size:12px;font-weight:700;padding:1px 9px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);vertical-align:middle;margin-left:4px}
+.conf.mid{border-color:var(--hot);color:var(--hot)}
+
+/* callouts */
+.callout{background:var(--card);border-left:6px solid var(--accent);border-radius:0 10px 10px 0;padding:22px 26px;margin:24px 0}
+.callout .lbl{font-family:var(--font-mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px}
+.callout.hot{border-left-color:var(--hot)}
+.callout.hot .lbl{color:var(--hot)}
+.callout p:last-child{margin-bottom:0}
+
+/* figure caption block (images omitted from PDF) */
+.fig{margin:26px 0;border:1px solid var(--line);border-radius:10px;background:var(--card2);overflow:hidden}
+.fig .ph{background:repeating-linear-gradient(45deg,#e4e4de,#e4e4de 10px,#ededea 10px,#ededea 20px);height:64px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;color:#9a9e97;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.fig figcaption{padding:14px 20px;font-size:14.5px;color:var(--dim);line-height:1.6}
+.fig figcaption b{color:var(--ink)}
+
+/* tables */
+.tw{overflow-x:auto;margin:22px 0;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.5;min-width:560px;background:var(--card)}
+caption{caption-side:top;text-align:left;font-family:var(--font-serif);font-weight:700;font-size:16px;color:var(--ink);padding:14px 16px 6px}
+thead th{background:var(--ink);color:var(--paper);font-weight:700;text-align:left;padding:11px 14px;font-size:13px;position:sticky;top:0;vertical-align:middle}
+tbody th{background:var(--card2);font-weight:700;text-align:left;color:var(--ink)}
+td,tbody th{padding:10px 14px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr:nth-child(even){background:var(--card2)}
+td b{color:var(--ink)}
+
+/* list of findings */
+.findings{counter-reset:f;list-style:none;padding:0}
+.findings li{position:relative;padding:18px 20px 18px 62px;margin-bottom:14px;background:var(--card);border-radius:10px;border:1px solid var(--line)}
+.findings li::before{counter-increment:f;content:counter(f,decimal-leading-zero);position:absolute;left:18px;top:16px;font-family:var(--font-mono);font-weight:700;font-size:18px;color:var(--accent)}
+.findings li b{color:var(--ink)}
+
+.back-top{position:fixed;right:24px;bottom:24px;z-index:40;background:var(--ink);color:var(--paper);border:none;width:46px;height:46px;border-radius:50%;font-size:20px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+.back-top.show{opacity:.9;pointer-events:auto}
+
+.note{font-size:13.5px;color:#7c807f;font-style:italic;margin:8px 0 20px}
+hr.soft{border:none;border-top:1px solid var(--line);margin:30px 0}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:fixed;top:60px;left:0;right:0;bottom:0;height:auto;background:var(--paper);z-index:45;padding:20px 24px;display:none;border-bottom:1px solid var(--line)}
+  .toc.open{display:block;overflow-y:auto}
+  .topbar .menu-btn{display:block}
+  main{padding:28px 0 100px}
+  .masthead{padding:36px 26px}
+  .masthead h1{font-size:40px}
+}
+@media print{
+  .topbar,.toc,.back-top,.progress{display:none}
+  .layout{display:block;max-width:none}
+  body{font-size:12px}
+  .fig .ph{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="dot"></span><span>技能溢价的重估</span><span class="t2">SCALE-R × TVI · 2026</span></div>
+  <button class="menu-btn" id="menuBtn">目录</button>
+</div>
+<div class="progress" id="prog"></div>
+
+<div class="layout">
+  <!-- ===================== TOC ===================== -->
+  <nav class="toc" id="toc">
+    <h4>目录</h4>
+    <a href="#guide">阅读指南</a>
+    <a href="#summary">执行摘要</a>
+    <a href="#summary" class="sub">核心判断</a>
+    <a href="#findings" class="sub">十项主要发现</a>
+    <a href="#ceo" class="sub">对 CEO 的战略意义</a>
+    <a href="#chro" class="sub">对 CHO/CHRO 的建议</a>
+    <a href="#priority" class="sub">未来三年优先事项</a>
+    <a href="#ch1">第一章 · 价值获取机制</a>
+    <a href="#ch2">第二章 · 供给曲线移动</a>
+    <a href="#ch3">第三章 · 标准任务商品化</a>
+    <a href="#ch4">第四章 · 可验证能力组合</a>
+    <a href="#ch5">第五章 · 价值迁移与人才图谱</a>
+    <a href="#ch6">第六章 · 六大行业差异</a>
+    <a href="#ch7">第七章 · 企业案例</a>
+    <a href="#ch8">第八章 · 中国企业</a>
+    <a href="#ch9">第九章 · 传统体系误判</a>
+    <a href="#ch10">第十章 · 岗位底座＋动态溢价</a>
+    <a href="#ch11">第十一章 · CEO/CHRO 议程</a>
+    <a href="#ch12">第十二章 · 实施路线图</a>
+    <a href="#conclusion">结论</a>
+    <h4>附录</h4>
+    <a href="#appA">A · 证据矩阵 C1—C12</a>
+    <a href="#appB">B · 案例核验卡 K01—K12</a>
+    <a href="#appC">C · U—T—P—W 数据设计</a>
+    <a href="#appD">D · 反方观点检验</a>
+    <a href="#appE">E · 图表设计说明</a>
+    <a href="#appF">F · 资料台账 E01—E79</a>
+  </nav>
+
+  <!-- ===================== MAIN ===================== -->
+  <main>
+    <!-- MASTHEAD -->
+    <header class="masthead">
+      <svg class="wave" viewBox="0 0 900 320" preserveAspectRatio="xMidYMid slice" fill="none">
+        <path d="M0 90 Q 60 20 120 90 T 240 90 T 360 90 T 480 90 T 600 90 T 720 90 T 840 90 T 960 90" stroke="#7A8A6E" stroke-opacity=".4" stroke-width="2"/>
+        <path d="M0 250 Q 80 320 160 250 T 320 250 T 480 250 T 640 250 T 800 250 T 960 250" stroke="#7A8A6E" stroke-opacity=".25" stroke-width="2"/>
+      </svg>
+      <div class="kick">Repricing the Skill Premium · 战略研究报告</div>
+      <h1>技能溢价的<em>重估</em></h1>
+      <div class="sub">AI 时代真正稀缺能力的定价机制</div>
+      <div class="meta">
+        <span><b>框架</b> SCALE-R × TVI</span>
+        <span><b>年份</b> 2026</span>
+        <span><b>结构</b> 12 章 + 6 附录</span>
+        <span><b>证据</b> E01—E79 · K01—K16 · C1—C12</span>
+      </div>
+    </header>
+
+    <!-- ============ 阅读指南 ============ -->
+    <section id="guide">
+      <h2 class="chap"><span class="cn">Reading Guide</span>报告说明与阅读指南</h2>
+      <p class="lead">本报告研究的不是一张"未来技能清单"，而是技术、市场和组织共同作用下，能力如何获得经济租金、组织权力与职业机会。全文<b>以任务为最小分析单元，以岗位为治理底座，以可验证结果为付薪依据</b>；将事实证据、条件性推断和规范性建议分开表达。</p>
+      <p><b>证据标识。</b> E01—E79 为资料台账编号；K01—K16 为企业案例核验卡；R01—R46 为被拒绝或降级证据。正文中"高、中高、中、低"表示<b>结论置信度，而非影响大小</b>。高置信度要求来自不同证据层的相互独立支持；案例或供应商材料只能说明机制或实践存在，不能单独证明因果。</p>
+      <p><b>三个分析层级。</b> 战略层回答哪些能力会成为竞争优势；组织层回答如何组合人、流程、数据与 AI；机制层回答如何评价、培养和付薪。任何从任务实验直接跳到编制或固定工资的推断，均被视为<em class="hot">跨层级推断</em>，必须另有证据。</p>
+      <p><b>关键口径。</b> "AI 暴露"不是实际采用，"采用"不是有效使用，"节省时间"不是企业生产率，"生产率提升"不是员工获得工资溢价，"岗位广告工资差"不是个人 AI 技能的因果回报。本报告将这些区别作为所有结论的约束条件。</p>
+      <p><b>研究边界。</b> 时间范围为 2015 年至今，重点为 2023 年后生成式 AI、智能体与工作流自动化，展望未来 3—5 年。地区覆盖全球并设置中国专章；行业重点为科技、金融、制造、医疗、零售消费和专业服务。报告不预测单一职业的精确消失率，不提供跨企业通用加薪百分比，也不把尚未实施的薪酬制度写成市场事实。</p>
+    </section>
+
+    <!-- ============ 执行摘要 ============ -->
+    <section id="summary">
+      <h2 class="chap"><span class="cn">Executive Summary</span>执行摘要</h2>
+
+      <h3>核心判断</h3>
+      <p>AI 没有简单消除技能溢价，而是在改变溢价的<b>来源、持续期和获取者</b>。知识、代码、内容、常规分析和标准化决策建议的边际供给显著增加后，"能够生成一个合格答案"更接近基础设施；仍能获得持续溢价的，是把领域知识嵌入高价值情境，定义问题、识别模型边界、校准输出、承担责任、协调多方并把人机系统转化为可复制净结果的能力组合。</p>
+      <p>这一中心命题获得 <em class="sage">有条件支持</em>，但需要三项修正。<b>第一</b>，专业知识不会整体贬值：它从"答案库存"转为验证、异常处置和责任判断的基础。<b>第二</b>，所谓判断力、创造力、共情或影响力不会因为"属于人类"就自动升值；只有在高价值、高风险、长期承诺或复杂协同情境中，并能以行为与结果识别，才形成溢价。<b>第三</b>，价值创造与价值分配是两条链：AI 提高某项任务绩效，并不保证员工获得基本工资、奖金、晋升或稳定性回报。</p>
+      <p>截至证据截止日，公开研究已较强地回答"AI 是否改变特定任务绩效"，却仍未形成同一员工、同一时间窗内"实际 AI 使用—具体任务—客观净绩效—实际薪酬/晋升"的完整因果闭环。客服现场研究中，5,172 名坐席、约 300 万次对话的结果显示 AI 访问使每小时成功解决问题数平均提高 15%，低经验/低技能员工约提高 30%，但研究没有观察个人工资变化<a class="cite">[E25]</a>。三家企业 4,867 名开发者现场实验的合并估计为完成任务数提高 26.08%，同样没有工资数据<a class="cite">[E30]</a>。丹麦约 25,000 名劳动者和约 7,000 个工作场所的调查—行政数据研究则显示，企业投入提高了采用并创造新任务，但两年内平均工资和记录工时效应不显著，最新置信区间排除超过 1% 的平均效应<a class="cite">[E29]</a>。这组证据的管理含义不是"AI 无价值"，而是薪酬传导受流程、需求、议价、制度和归因机制制约。</p>
+      <p>AI 首先压缩的不是所有低技能劳动，而是<b>目标清晰、上下文可编码、评价标准稳定、错误成本可控</b>的任务。世界银行基于约 2.85 亿条美国职位广告的研究显示，高替代潜力职业的广告相对低潜力组下降，且无需经验和入门岗位更弱；但职位广告不是就业存量，宏观周期与技术冲击可能共变<a class="cite">[E13]</a>。ILO 基于任务的全球指数则判断，约四分之一劳动者处于某种生成式 AI 暴露职业，最高暴露职业约占 3.3%，工作转型比整岗替代更可能<a class="cite">[E06]</a>。两项研究并不矛盾：任务结构先变，岗位数量和工资随后以不同行业、制度和需求弹性调整。</p>
+      <p>本报告提出六个相互连接的管理框架。<b>SCALE-R 模型</b>用有效稀缺性（S）、价值贡献（C）、判断责任（A）、净杠杆（L）、情境嵌入（E）和可替代/可复制性（R）评估某能力在特定组织与时点的相对溢价潜力；<b>能力四象限</b>以任务的 AI 可替代性与组织价值决定自动化、重构、维持或战略投资；<b>五层能力金字塔</b>从 AI 基础能力、专业执行、人机协同判断、组织影响到战略系统构建，表达的是价值责任半径，而非软硬技能高低；<b>技能迁移地图</b>显示能力在 AI 前、AI 增强和 AI 原生阶段如何由独立技能变为门槛、组合或战略稀缺能力；<b>人才价值指数 TVI</b> 将岗位底座与稀缺、结果、AI 净杠杆、责任、组织影响、成长和长期价值分开计价；<b>成熟度模型</b>则限定企业在不同阶段可以安全采用何种绩效和薪酬动作。</p>
+
+      <h3 id="findings">十项主要发现</h3>
+      <ol class="findings">
+        <li><b>任务溢价的重分配快于岗位消失。</b> 生成、检索、整理和标准执行先被重写；异常、验证、客户承诺、签字责任和跨系统交接使岗位继续存在。企业应以任务组合而非职业暴露率决定重构与编制。<span class="conf">高</span></li>
+        <li><b>知识没有失去价值，但"脱离情境与责任的答案"正在商品化。</b> 深度专家的价值将两极分化：只复述规则者受压，能识别边界、解释因果、处理例外并承担后果者升值。<span class="conf">高</span></li>
+        <li><b>AI 工具使用会逐渐门槛化。</b> 职位广告中的 AI 技能工资差仍存在，但横截面差异混合了职业、企业、地区和资历。长期稳定溢价更可能来自工作流、数据、评测、治理与业务结果的组合，而不是提示技巧。<span class="conf">中高</span></li>
+        <li><b>最稀缺的不是"给出答案"，而是"选择值得解决的问题并校准答案"。</b> 但企业不应为抽象判断力付薪，只应为可观察的决策日志、备选方案、校准质量、决策权和事后结果付薪。<span class="conf">中高</span></li>
+        <li><b>AI 可能先压缩执行差距，再扩大高阶杠杆差距。</b> 客服、写作和边界内咨询任务显示低基线者改善更大；智能体阶段，能提供上下文、拆解目标、恢复错误和编排工具的人可能扩大问题范围。后半段仍缺同一队列纵向验证。<span class="conf mid">中</span></li>
+        <li><b>高暴露、高价值任务把人推向验证、异常和责任位置。</b> 复核不是无成本保险；若生成速度超过审查能力，组织会从生产瓶颈转向质量、合规和认知负荷瓶颈。<span class="conf">高</span></li>
+        <li><b>初级岗位与学徒链是未来三年必须主动管理的风险。</b> AI 可以把新手迅速带到平均水平，也可能删除形成专家所需的基础练习。校招量、导师容量、影子判断、异常案例覆盖和晋升准备度应成为转型护栏。<span class="conf mid">中</span></li>
+        <li><b>生产率来自互补组织资本，而非许可覆盖率。</b> 数据权限、流程所有权、RACI、评测、例外升级、员工参与和下游瓶颈决定个体节时能否变为企业净价值。<span class="conf">高</span></li>
+        <li><b>外部 AI 工资溢价不能直接成为内部加薪系数。</b> 企业应保留岗位与职级的公平底座，用有期限的技能津贴、项目/团队奖金、责任津贴、递延奖金和长期激励分别承接不同价值性质。<span class="conf">高</span></li>
+        <li><b>中国企业的下一轮优势是"关键能力密度"，不是人才数量的简单延伸。</b> 1,222 万高校毕业生供给和工程执行能力仍是重要基础，但只有当领域、判断、系统重构、治理与组织动员在关键岗位形成密度，人才规模才转化为人均价值。<span class="conf mid">中 · 战略假设</span></li>
+      </ol>
+
+      <figure class="fig"><div class="ph">图表 01 · 概念逻辑图</div><figcaption><b>图表01 AI 时代技能溢价变化逻辑。</b> 结论：AI 扩大标准答案供给，但技能租金最终由任务重构、互补资产、责任结构、市场分配和薪酬治理共同决定。依据：E01、E03、E06、E25—E30、E67。</figcaption></figure>
+
+      <h3 id="ceo">对 CEO 的战略意义</h3>
+      <p>CEO 需要把人才战略纳入 AI 资本配置，而不是把 AI 只视为 IT 采购或成本项目。第一，选择价值链中"高价值且可重构"的任务簇，明确哪些收益来自增产、质量、风险、客户体验、新业务或成本；第二，识别系统瓶颈会转移到哪里，特别是审查、数据、权限、例外、客户信任和责任签字；第三，建立少数关键能力组合的投资组合与继任覆盖；第四，决定 AI 价值池在客户价格、利润、再投资、工资与职业机会之间如何分配；第五，以董事会风险偏好限定自动化边界。</p>
+      <p>最危险的战略误判有两个：一是把暴露率当作可裁减比例，导致责任与培养链被同时抽空；二是把工具普及当作能力升级，得到高活跃率、低流程改变和不可验证的 ROI。企业应把"单位关键岗位的战略能力密度"和"风险调整净 AI 价值"作为比许可数更重要的领先指标。</p>
+
+      <h3 id="chro">对 CHO/CHRO 的行动建议</h3>
+      <p>CHO/CHRO 的任务不是给现有能力模型增加一列"AI 技能"，而是重写任务、能力、证据和付薪之间的连接。具体包括：把岗位说明书拆为任务—情境—责任单元；建立四象限和五层能力词典；用工作样本、决策日志与项目证据替代纯自评；对 AI 基础素养实行全员门槛；为高杠杆 IC、工作流设计者和高责任专家建立双轨职业路径；保护职业入口与导师制；重构绩效为数量、质量、风险、团队和下游结果的组合；用 TVI-Payable 把价值与可支付性分开；建立员工查看、纠错和申诉机制；每 6—12 个月复评技能半衰期。</p>
+
+      <h3 id="priority">未来三年的优先事项</h3>
+      <ul>
+        <li><b>0—3 个月：</b> 建立任务注册表、AI 暴露与价值四象限、战略稀缺能力清单、现有薪酬机制缺口和员工数据边界；选择 1—2 个可测任务簇做基线。</li>
+        <li><b>3—12 个月：</b> 重构重点工作流，建立质量/风险/复核成本口径，试点 SCALE-R 和 TVI-Value，采用团队项目奖而非使用量奖金；同步改造入门岗位学习任务。</li>
+        <li><b>12—36 个月：</b> 连接任务、技能、项目、绩效和薪酬数据，形成动态内部人才市场；对多周期稳定的能力调整岗位带宽或长期激励；将能力投资组合纳入战略规划和董事会监督。</li>
+      </ul>
+      <div class="callout"><div class="lbl">证据权限</div><p>企业不需要等待一个完美的市场工资系数才行动，但必须遵守证据权限：M1—M2 阶段只能奖励学习与试点；M3 阶段可奖励项目净结果；只有 M4 以上、且多周期证据与公平治理齐备，才适合把能力溢价稳定写入基本工资和长期激励。</p></div>
+    </section>
+
+    <!-- ============ 第一章 ============ -->
+    <section id="ch1">
+      <h2 class="chap"><span class="cn">Chapter 01</span>技能溢价不是一项工资差，而是一组价值获取机制</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>传统"高技能"之所以获得溢价，不只是因为知识稀缺，还因为教育和资格提供可信信号、岗位配置决策权、制度限定供给、经验积累隐性知识、组织分配影响力。AI 改变其中的知识与执行供给，却不会同时消除责任、信任、法规、议价和组织权力。因此，技能价值变化必须同时观察市场工资、企业内部薪酬、稳定性、晋升、影响力和创业价值六类结果。</p></div>
+
+      <h3>传统技能溢价的五个来源</h3>
+      <p>第一是 <b>供给限制</b>。长周期教育、资格考试、地理和行业准入使某些能力难以快速扩张。第二是 <b>边际生产率</b>。专业人员能够完成更复杂任务、降低错误或提高资本利用率。第三是 <b>信号与筛选</b>。学历、品牌雇主和工作年限降低了企业判断候选人质量的成本，即使它们不是能力本身。第四是 <b>制度与责任</b>。签字权、执照、合规责任和职位授权把部分任务与特定角色绑定。第五是 <b>租金分配与议价</b>。同样的产出可能由员工、企业、客户或资本获得，薪酬取决于替代选项、集体制度、市场竞争和内部治理，而非技术自动决定。<a class="cite">[E01—E04]</a></p>
+      <p>AI 对这五个来源的冲击不对称。它最快降低信息搜寻、初稿和标准执行的边际成本；较慢改变执照、法律责任、客户承诺和职位授权；更不直接决定利润如何进入工资。由此产生"任务价值已变、岗位工资未变""产出上升、员工收入不变"或"工具普及、组织结果有限"的过渡期。</p>
+
+      <div class="tw"><table>
+        <caption>图表02 六类技能溢价及其观测口径</caption>
+        <thead><tr><th>溢价类型</th><th>定义</th><th>观察指标</th><th>AI 影响路径</th><th>不能混用的代理</th></tr></thead>
+        <tbody>
+          <tr><th>市场工资溢价</th><td>可比劳动者因能力获得的工资差</td><td>同岗同企工资、跳槽报价、招聘周期</td><td>供需和企业选择</td><td>职位广告均值、职业暴露</td></tr>
+          <tr><th>企业内部薪酬溢价</th><td>基本工资、奖金、津贴、股权差异</td><td>实发薪酬、绩效周期、支付工具</td><td>结果归因和制度设计</td><td>工具登录、经理印象</td></tr>
+          <tr><th>职业稳定性溢价</th><td>更低失业/裁撤风险或更强再就业能力</td><td>留任、失业期、横向迁移</td><td>任务剩余结构、新任务</td><td>某次招聘广告变化</td></tr>
+          <tr><th>晋升机会溢价</th><td>获得更大职责和职业资本</td><td>晋升率、任务范围、关键项目</td><td>高阶任务与授权集中</td><td>工龄本身</td></tr>
+          <tr><th>组织影响力溢价</th><td>对资源、标准与变革的影响</td><td>跨部门采用、决策权、网络结果</td><td>人机网络编排</td><td>发言次数、下属人数</td></tr>
+          <tr><th>创业/价值创造溢价</th><td>构建新业务、平台和期权</td><td>新收入、资本效率、平台复用</td><td>小团队杠杆、规模化</td><td>融资估值单点变化</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>为什么"技能普及"不必然等于工资下降</h3>
+      <p>技能供给增加只有在其他条件近似不变时才压低价格。AI 可能同时降低产品价格、扩大需求、创造新任务、提升质量或使原来不经济的服务可行。Acemoglu 与 Restrepo 的任务框架强调，自动化的位移效应会与生产率效应和新任务效应共同决定劳动结果<a class="cite">[E03]</a>。客服助手让新手更快达到可接受水平，可能降低同类回答的稀缺性，也可能扩大服务量并把人工转向复杂客户问题；最终工资取决于需求弹性和组织是否把新增价值分配给员工。</p>
+      <p>制度会延缓重定价。医师、律师、审计、信贷审批和工业安全岗位的责任不能仅因模型可生成答案而转移。工会、工资带宽、国有企业工资总额、内部公平和长期合同也使工资对任务变化存在粘性。粘性既能避免短期技术波动冲击员工，也可能让企业长期低估高杠杆个体贡献者。因此，本报告不把即时工资变化当作能力价值变化的唯一证据。</p>
+      <figure class="fig"><div class="ph">图表 03 · 概念示意图</div><figcaption><b>图表03 AI 如何移动技能供给曲线（概念示意）。</b> 横轴为可提供的合格任务产出，纵轴为单位任务价格/技能租金。标准化任务的供给曲线显著右移；责任型、情境型能力只有限右移。该图是机制图，不是经验估计。</figcaption></figure>
+
+      <h3>企业竞争优势的真正变化</h3>
+      <p>当通用模型和工具可被竞争者同时购买，竞争优势从"是否拥有工具"转向四类互补资产：专有且合法可用的数据与知识；被重新设计的端到端流程；能定义目标、验证输出和承担责任的人；使这些要素稳定复制的治理与文化。AI 可以放大既有优势，也可以放大流程混乱、数据债务和权责不清。</p>
+      <p>这意味着人才数量的战略意义下降但不消失。规模仍有利于训练、工程化和覆盖大量场景；真正决定差异的，是关键任务上达到高质量门槛的人数占比、这些人之间能否形成系统、以及方法能否被其他团队复用。本报告将其定义为 <em class="sage">关键能力密度</em>。</p>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>先把"哪类溢价正在变化"说清楚，再讨论定薪。市场招聘困难可以支持稀缺津贴；项目净收益支持奖金；高风险签字支持责任薪酬；跨周期平台价值支持长期激励。一个外部工资数字不应同时承担所有解释。</p></div>
+    </section>
+
+    <!-- ============ 第二章 ============ -->
+    <section id="ch2">
+      <h2 class="chap"><span class="cn">Chapter 02</span>AI 正在移动技能供给曲线，但工资与岗位调整更慢</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>AI 与过去办公软件不同之处，不仅是自动化速度，更是它进入非例行认知任务、通过自然语言降低使用门槛，并可作为智能体跨步骤调用工具。但模型仍具有参差不齐的能力边界，端到端收益受上下文、验证和组织系统约束。最可能的顺序是：任务方式改变—工作流重构—岗位组合调整—招聘与职业入口变化—工资与制度再定价。</p></div>
+
+      <h3>从暴露到工资必须经过五段证据链</h3>
+      <p>职业暴露只能说明技术可能触及哪些任务，不能说明企业已采用。企业采用不能说明员工在具体工作中有效使用。实际使用不能说明净绩效，因为复核、返工、推理、集成、治理和下游拥堵可能抵消节时。净绩效也不能说明员工获得工资，因为价值可能进入价格、利润、资本回报、更多产出或更长工时。最后，早期结果不能自动外推到智能体成熟期。</p>
+      <figure class="fig"><div class="ph">图表 04 · 证据链流程</div><figcaption><b>图表04 暴露—采用—任务—净绩效—薪酬的证据链。</b> 设计目的：阻止从"可做"直接跳到"会裁员/会加薪"。每一箭头均需独立数据和反事实。</figcaption></figure>
+      <p>ILO 2025 年的任务指数表明，全球约四分之一劳动者处于某种生成式 AI 暴露职业，但最高暴露职业约占 3.3%，并明确判断转型比整岗替代更可能<a class="cite">[E06]</a>。IMF 对发达经济体的暴露情景更高，但同样区分增强与替代<a class="cite">[E07]</a>。两者是情景与暴露证据，不应被翻译成精确裁员比例。</p>
+
+      <h3>AI 与过去数字化的四个差异</h3>
+      <p>一是 <b>接口通用化</b>：自然语言让非技术人员可直接调用模型，使扩散速度更快。二是 <b>任务边界更广</b>：生成式 AI 触及写作、代码、分析、图像、沟通与决策准备，而不仅是例行数据处理。三是 <b>输出概率化</b>：相同输入可能产生不同结果，质量依赖提示、上下文、模型版本和验证。四是 <b>代理化</b>：智能体可规划、调用工具和执行多步流程，使瓶颈从生成本身转向权限、观测、审查和异常升级。</p>
+      <p>这些差异提高了潜在杠杆，也增加了测量难度。66 家企业、7,137 名知识工作者的六个月随机实验显示，工具使每周电子邮件时间约少 2 小时、非工作时段工作减少，但未检测到任务数量或构成显著变化<a class="cite">[E28]</a>。四国近 6,000 名高管调查中，约 70% 企业称积极使用 AI，却有 80% 以上称过去三年尚无生产率或就业影响<a class="cite">[E69]</a>。采用与价值之间的距离不是反常，而是互补资产建设期的典型特征。</p>
+
+      <h3>任务先变、岗位后调</h3>
+      <p>岗位是任务组合。一个客服岗位可以同时包含检索政策、生成回复、识别情绪、处理例外、做客户承诺、升级欺诈和记录合规；AI 可能自动化前两项，却提升后三项的相对权重。整岗是否消失取决于剩余任务能否形成足够工作量、需求是否扩大、责任是否可转移、流程是否端到端重构。</p>
+      <div class="tw"><table>
+        <caption>图表05 岗位、任务、技能、责任与结果的关系</caption>
+        <thead><tr><th>层级</th><th>核心问题</th><th>AI 改变什么</th><th>管理决策</th></tr></thead>
+        <tbody>
+          <tr><th>岗位</th><td>组织为何需要这一角色</td><td>任务权重与边界</td><td>保留、合并、拆分、重构</td></tr>
+          <tr><th>任务</th><td>具体做什么</td><td>自动、增强或新生</td><td>自动化/增强/人工/停止</td></tr>
+          <tr><th>能力</th><td>如何稳定完成任务</td><td>门槛、组合、稀缺性</td><td>招聘、培养、配置</td></tr>
+          <tr><th>责任</th><td>谁签字、承担下行</td><td>复核与升级位置</td><td>RACI、权限、责任津贴</td></tr>
+          <tr><th>结果</th><td>为何值得做</td><td>速度、质量、风险和需求</td><td>绩效、预算、价值池</td></tr>
+        </tbody>
+      </table></div>
+      <p>美国职位广告研究已观察到任务需求重配：预印本估计暴露变化中跨岗位招聘重配平均解释 52%，岗位内任务重构解释 39.5%。这些比例来自模型化职位广告，不是员工实测，却说明企业会同时通过"换人/换岗"和"同岗换任务"调整。对 CEO 而言，裁减编制只是多个结果之一；对 CHRO 而言，岗位入口与任务学习结构必须单独监测。</p>
+
+      <h3>初级岗位的双重效应</h3>
+      <p>AI 既是新手加速器，也是练习压缩器。客服研究中，两个月 AI 辅助经验者可达到无 AI 组六个月以上经验者的水平；这有利于降低入职门槛、提升服务一致性。另一方面，若企业删除所有基础检索、初稿、调试和客户沟通，初级人员可能缺少形成情境判断的样本。世界银行职位广告研究发现，无需经验和无需高学历的高替代潜力岗位相对更弱；Stanford 高频工资记录也提供 22—25 岁高暴露职业就业相对下降的信号。两者均不能完全归因于 AI，但足以触发人才管道风险管理。</p>
+      <p>企业的正确动作不是机械保留低价值劳动，而是设计新的学习生产系统：让初级人员审计 AI 输出、比较备选方案、处理异常、参与影子决策、在模拟环境练习高风险任务，并把导师容量写入经理绩效。学习期的低产出不应被 TVI 惩罚，否则企业会以短期效率换取未来专家短缺。</p>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>任何岗位调整方案至少同时回答四个问题：被移除的是哪些任务；剩余任务的价值和责任是否上升；需求会否扩大；下一代专家如何获得足够练习。只回答第一个问题的"AI 人员效率目标"不是完整商业案例。</p></div>
+    </section>
+
+    <!-- ============ 第三章 ============ -->
+    <section id="ch3">
+      <h2 class="chap"><span class="cn">Chapter 03</span>被商品化的是标准任务，不是所有专业知识</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>知识的获取成本下降，会压缩"记忆、检索、初稿、模板化分析"的独立溢价；专业价值将向情境解释、验证、异常处理、因果推理、客户责任和制度签字迁移。顶尖专家与普通专业执行者之间可能分化：前者用 AI 扩大问题范围，后者的标准产出更易被平台化。任务可自动化不等于岗位必然消失。</p></div>
+
+      <h3>十类传统高价值技能的重估</h3>
+      <div class="tw"><table>
+        <caption>图表06 传统高价值技能的 AI 重估与岗位动作</caption>
+        <thead><tr><th>技能/任务</th><th>AI 替代</th><th>AI 增强</th><th>人类保留职责</th><th>溢价方向</th><th>对初级链影响</th><th>企业动作</th></tr></thead>
+        <tbody>
+          <tr><th>通用信息搜集</th><td>高</td><td>高</td><td>来源选择、冲突核验、保密</td><td>快速下降/门槛化</td><td>减少检索练习</td><td>自动化；训练证据核验</td></tr>
+          <tr><th>常规报告撰写</th><td>高</td><td>高</td><td>论点、证据、受众与责任</td><td>下降并分化</td><td>初稿岗位减少</td><td>重构为分析与编辑</td></tr>
+          <tr><th>标准化数据分析</th><td>中高</td><td>高</td><td>口径、因果、异常和决策</td><td>基础下降，高阶上升</td><td>基础 SQL/制表练习减少</td><td>建立数据语义与审计</td></tr>
+          <tr><th>基础编程</th><td>中高</td><td>高</td><td>架构、上下文、测试、安全维护</td><td>分化</td><td>练习与审查张力</td><td>以功能价值和质量计绩效</td></tr>
+          <tr><th>通用翻译</th><td>高</td><td>高</td><td>法律、文化、品牌与承诺</td><td>显著下降</td><td>初级语言服务受压</td><td>自动化＋专业复核</td></tr>
+          <tr><th>常规设计/内容</th><td>高</td><td>高</td><td>品牌审美、IP、真人边界</td><td>供给膨胀，品位条件升值</td><td>作品量不再稀缺</td><td>以市场结果与品牌一致性评估</td></tr>
+          <tr><th>标准合同/文档</th><td>中高</td><td>高</td><td>例外、谈判、司法辖区和签字</td><td>基础下降，责任保留</td><td>初级审阅减少</td><td>条款库、抽检、升级</td></tr>
+          <tr><th>基础咨询分析</th><td>中高</td><td>高</td><td>问题定义、客户情境、取舍</td><td>两极分化</td><td>金字塔底部变薄</td><td>用假设质量与落地结果评价</td></tr>
+          <tr><th>初级研究</th><td>高</td><td>高</td><td>研究设计、来源效度、反证</td><td>基础下降</td><td>学徒样本减少</td><td>让初级人员做复核与复现</td></tr>
+          <tr><th>常规客服/管理流程</th><td>高</td><td>高</td><td>复杂升级、信任、例外、变革</td><td>常规下降，复杂责任上升</td><td>入口数量可能下降</td><td>自动分流＋高质量人工通道</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">"高"表示在目标清晰、数据可获得、错误成本可控的条件下；不是对整个职业的判断。标准化数据分析若涉及监管资本、临床结局或重大投资，替代性会因责任与上下文显著下降。同样，沟通表达在翻译和脚本跟进中快速商品化，在重大谈判和长期客户承诺中仍可能高价值。</p>
+
+      <h3>专业知识的三个价值边界</h3>
+      <p>专业知识继续形成溢价，需要至少满足三项之一。其一，<b>知识难以显性化</b>：来自长期案例、系统历史和隐性约束。其二，<b>输出需要责任闭环</b>：错误产生重大财务、法律、健康或声誉损失。其三，<b>知识参与问题选择</b>：决定什么证据重要、哪些假设可接受、何时停止或升级。</p>
+      <p>资深开源开发者在熟悉大型代码库中的随机实验曾发现，使用 2025 年初工具实际使完成时间约增加 19%，而参与者事后认为自己快了约 20%。这一反例表明，隐性上下文和验证成本可抵消生成速度；研究团队 2026 年又指出工具进步、样本选择和并行智能体使新估计不稳定。管理上不能把某一时点的正或负结果永久写入能力模型，必须记录模型版本和任务环境。</p>
+      <p>BCG"参差不齐的技术前沿"实验中，758 名顾问在模型能力边界内完成更多任务、速度和质量提高；在边界外任务，AI 组正确率反而下降约 19 个百分点。因此，AI 时代专家的重要能力之一是 <em class="sage">边界识别</em>：知道何时信任、何时核验、何时拒绝模型建议。它不是抽象的"批判性思维"，而是领域证据、校准记录和后果责任的组合。</p>
+
+      <h3>能力通胀与专家两极分化</h3>
+      <p>当 AI 让更多人生成"看起来专业"的输出，组织会面临能力通胀：报告更长、代码更多、方案更多，但可验证质量与决策价值未必同步上升。输出量失去信号功能后，企业必须转向更接近结果的证据：采用率、下游质量、返工、事故、客户行为、长期维护和被放弃的坏决策。</p>
+      <p>专家可能出现三层分化：<b>答案型专家</b>依赖知识库存和标准交付，溢价受压；<b>责任型专家</b>将知识用于高风险验证、例外和签字，溢价持续；<b>系统型专家</b>把领域知识、AI、数据、流程和组织变革组合为可复制系统，可能获得最高杠杆溢价。Claude Code 约 40 万次会话研究显示，专家提供更长背景、委托更大范围并更能恢复错误，支持领域知识与 AI 杠杆互补，但不能据此推导工资。</p>
+      <figure class="fig"><div class="ph">图表 07 · 概念散点</div><figcaption><b>图表07 从答案型专家到系统型专家。</b> 横轴为任务范围与可复制杠杆，纵轴为判断责任与情境嵌入；标准输出位于左下，责任型专家位于左上，系统型专家位于右上。</figcaption></figure>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>不应取消专业序列，而应重写专业标准。晋升证据从"知道多少、做过多少年"转为"能否解释因果、处理例外、校准模型、做高质量取舍、承担后果并把方法复制给组织"。</p></div>
+    </section>
+
+    <!-- ============ 第四章 ============ -->
+    <section id="ch4">
+      <h2 class="chap"><span class="cn">Chapter 04</span>真正稀缺的不是"人类特质"，而是可验证的能力组合</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>AI 时代的战略稀缺能力不是一串软技能，而是四类组合：选择与判断、跨域系统整合、责任与信任、工作系统重构。每项能力只有同时具备有效稀缺、可识别、可产生商业价值和相对 AI 韧性，才值得长期投资。创造力、审美、共情或沟通若脱离领域、情境和结果，也会被商品化。</p></div>
+
+      <h3>战略稀缺能力清单</h3>
+      <div class="tw"><table>
+        <caption>图表08 十二项战略稀缺能力及其定价条件</caption>
+        <thead><tr><th>能力组合</th><th>稀缺性</th><th>可培养</th><th>可识别</th><th>商业价值</th><th>AI 韧性</th><th>专业依赖</th><th>持续溢价条件</th></tr></thead>
+        <tbody>
+          <tr><th>高价值问题发现与定义</th><td>中高</td><td>中</td><td>中</td><td>高</td><td>中高</td><td>高</td><td>问题价值差异大且有结果所有权</td></tr>
+          <tr><th>不完整信息下的校准判断</th><td>高</td><td>中</td><td>中高</td><td>高</td><td>高</td><td>高</td><td>有预测、置信度、复盘和后果</td></tr>
+          <tr><th>战略取舍与资源配置</th><td>高</td><td>中低</td><td>中</td><td>高</td><td>高</td><td>高</td><td>资本约束、不可逆选择、长期结果</td></tr>
+          <tr><th>因果推理与反事实设计</th><td>中高</td><td>中高</td><td>高</td><td>高</td><td>中</td><td>高</td><td>能改变决策而非只做解释</td></tr>
+          <tr><th>系统思考与瓶颈识别</th><td>中高</td><td>中</td><td>中</td><td>高</td><td>中高</td><td>中高</td><td>端到端净结果和跨系统边界</td></tr>
+          <tr><th>跨领域整合</th><td>高</td><td>中</td><td>中</td><td>高</td><td>中高</td><td>高</td><td>多域冲突真实存在且能落地</td></tr>
+          <tr><th>新概念/业务模式构建</th><td>高</td><td>中低</td><td>中</td><td>高但方差大</td><td>中高</td><td>中高</td><td>市场验证、资本纪律、迭代速度</td></tr>
+          <tr><th>AI 工作流与人机编排</th><td>阶段性高</td><td>高</td><td>高</td><td>高</td><td>中</td><td>高</td><td>跨团队复用、净收益、治理完整</td></tr>
+          <tr><th>复杂利益相关者与谈判</th><td>情境高</td><td>中</td><td>中</td><td>高</td><td>中高</td><td>中高</td><td>长期承诺、高风险、多方冲突</td></tr>
+          <tr><th>信任与组织动员</th><td>情境高</td><td>中</td><td>中低</td><td>高</td><td>高</td><td>中</td><td>采用、留任、客户与变革结果可证</td></tr>
+          <tr><th>伦理、风险与责任判断</th><td>高</td><td>中</td><td>高</td><td>高</td><td>高</td><td>高</td><td>有正式授权、事故和签字责任</td></tr>
+          <tr><th>元认知与快速更新</th><td>中高</td><td>高</td><td>中高</td><td>中高</td><td>中高</td><td>中</td><td>能跨模型/场景迁移而非课程完成</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">不是所有行业都需要同样强度。金融、医疗和工业安全更看重责任、风险与专业验证；消费创意更看重受品牌约束的审美和市场反馈；科技平台更看重系统架构、评测和复用；专业服务更看重问题定义、客户情境与组织影响。</p>
+
+      <h3>SCALE-R 能力溢价重估模型</h3>
+      <p>SCALE-R 评估某能力在组织 o、时点 t 的 <b>相对溢价潜力</b>，不是员工工资。六个变量分别为：S 有效稀缺性、C 价值贡献、A 判断责任、L 净杠杆、E 情境嵌入、R 可替代/可复制性。概念关系为：</p>
+      <div class="callout"><p style="font-family:var(--font-mono);font-size:15px">ln(能力溢价潜力) = 常数 ＋ 稀缺性 ＋ 价值贡献 ＋ 判断责任 ＋ 净杠杆 ＋ 情境嵌入 － 可替代性</p></div>
+      <p>企业历史数据不足时，可用 1—5 分行为锚点和加权几何平均做排序：S 15%、C 25%、A 15%、L 20%、E 10%、反向 R 15%。权重是试点起点，不是市场定律。几何平均防止"很稀缺"掩盖低价值，也防止高产出掩盖高风险。</p>
+      <figure class="fig"><div class="ph">图表 09 · 六轴雷达 + 三闸门</div><figcaption><b>图表09 SCALE-R 能力溢价模型。</b> 设计目的：把"稀缺、价值、责任、杠杆、情境、替代"放在一张可审计的决策图中；任何变量随模型、供给和流程变化而动态复评。</figcaption></figure>
+
+      <div class="tw"><table>
+        <caption>图表10 SCALE-R 变量、观察指标与评分锚点</caption>
+        <thead><tr><th>变量</th><th>1 分</th><th>3 分</th><th>5 分</th><th>优先数据</th></tr></thead>
+        <tbody>
+          <tr><th>S 有效稀缺</th><td>短期可替代</td><td>招聘/培养数月</td><td>供给极少、替代期长</td><td>合格候选率、招聘周期、培养达标期</td></tr>
+          <tr><th>C 价值贡献</th><td>局部便利</td><td>业务单元稳定影响</td><td>企业级结果/重大风险/战略选择</td><td>增量收入、质量、客户、资本、风险</td></tr>
+          <tr><th>A 判断责任</th><td>可逆、低风险</td><td>中等判断和损失</td><td>不可逆、受监管、最终签字</td><td>决策额度、事故上限、升级权</td></tr>
+          <tr><th>L 净杠杆</th><td>一次性个人节时</td><td>团队复用且净改善</td><td>跨业务平台化、持续扩大</td><td>风险调整产出、复用、总成本</td></tr>
+          <tr><th>E 情境嵌入</th><td>标准化、少上下文</td><td>本地流程/客户、多方协同</td><td>深度隐性知识、关键关系、变革</td><td>跨域数、关系期限、采用、迁移表现</td></tr>
+          <tr><th>R 可替代性</th><td>难复制</td><td>部分可复制、需复核</td><td>端到端可复制且风险可接受</td><td>AI 独立率、复核、错误、替代供给</td></tr>
+        </tbody>
+      </table></div>
+      <p>SCALE-R 必须经过三道闸门：C 低于最低价值阈值时，稀缺不产生战略溢价；结果归因不足时，分数只能进入认可、项目奖或递延支付；任何分数均受公平、预算、监管和员工参与约束。模型适合能力投资排序、人才盘点、关键岗位继任和薪酬讨论，<b>不适合黑箱自动定薪</b>。</p>
+
+      <h3>AI 可替代性 × 组织价值四象限</h3>
+      <p>四象限的分析单元是"任务 × 情境 × 责任"，而不是岗位或人。横轴为 AI 在可接受风险下的可替代性，纵轴为对组织战略和净结果的价值贡献。</p>
+      <figure class="fig"><div class="ph">图表 11 · 四象限</div><figcaption><b>图表11 能力价值四象限。</b> Q1 高替代低价值：自动化/停止；Q2 高替代高价值：重构人机流程；Q3 低替代低价值：简化/外包/退出；Q4 低替代高价值：战略稀缺能力投资。</figcaption></figure>
+      <div class="tw"><table>
+        <caption>图表12 四象限典型任务与动作</caption>
+        <thead><tr><th>象限</th><th>典型任务</th><th>典型岗位情境</th><th>主要动作</th><th>常见误判</th></tr></thead>
+        <tbody>
+          <tr><th>Q1 高替代低价值</th><td>格式整理、通用摘要、模板邮件、基础翻译</td><td>行政、初级内容、标准报告</td><td>自动化、合并、停止；设质量抽检</td><td>把省时全部当价值</td></tr>
+          <tr><th>Q2 高替代高价值</th><td>客服首轮、合同初审、代码生成、营销个性化</td><td>客服、法务、研发、增长</td><td>重构流程、保留异常与责任；测净价值</td><td>因高价值而拒绝自动化，或因可自动而取消责任</td></tr>
+          <tr><th>Q3 低替代低价值</th><td>稀有旧系统维护、低频手工例外</td><td>遗留运营、碎片流程</td><td>简化、标准化、外包或退出系统</td><td>因稀缺而高价长期保留</td></tr>
+          <tr><th>Q4 低替代高价值</th><td>战略取舍、受监管例外、关键谈判、工作流架构</td><td>高责任专家、业务构建者、跨域领导</td><td>投资、继任、长期激励、双轨晋升</td><td>用"软技能"标签代替结果证据</td></tr>
+        </tbody>
+      </table></div>
+      <p>Q2 是 AI 时代最重要的管理区域：它既包含最大价值，也包含最易发生责任空洞和瓶颈转移的风险。企业应把人从生成转向定义、验证、异常和承诺，同时重新计算团队结构，而不是把整岗暴露率直接转成裁员比例。</p>
+
+      <h3>五层能力金字塔</h3>
+      <p>五层不是"软技能比硬技能高级"，而是能力承担的价值与责任半径逐层扩大。上层依赖下层：没有领域执行能力，判断可能变成话术；没有 AI 基础，系统重构难以落地；没有组织层能力，战略方案无法形成采用。</p>
+      <figure class="fig"><div class="ph">图表 13 · 五层金字塔</div><figcaption><b>图表13 五层能力金字塔。</b> L1 AI 与数字基础；L2 专业任务与人机执行；L3 问题定义、系统思考和高质量判断；L4 协同、影响、信任、变革与资源整合；L5 方向选择、价值创造和新业务/工作系统构建。</figcaption></figure>
+      <div class="tw"><table>
+        <caption>图表14 五层能力的稀缺、培养与溢价趋势</caption>
+        <thead><tr><th>层级</th><th>能力定义</th><th>AI 影响</th><th>稀缺</th><th>可培养</th><th>价值贡献</th><th>溢价趋势</th><th>典型人才</th></tr></thead>
+        <tbody>
+          <tr><th>L1 基础</th><td>安全使用工具、数据素养、验证常识</td><td>快速普及</td><td>低—中</td><td>高</td><td>门槛</td><td>先升后降</td><td>全员</td></tr>
+          <tr><th>L2 执行</th><td>领域任务、提示/工具组合、质量控制</td><td>强增强/部分替代</td><td>中</td><td>高</td><td>直接产出</td><td>内部分化</td><td>AI 增强型专业人才</td></tr>
+          <tr><th>L3 认知</th><td>定义问题、因果、系统思考、校准判断</td><td>互补但可部分增强</td><td>中高</td><td>中</td><td>决策质量</td><td>上升</td><td>高判断专家、跨域整合者</td></tr>
+          <tr><th>L4 组织</th><td>信任、谈判、协同、变革、资源整合</td><td>常规协调可替代，复杂协同互补</td><td>情境高</td><td>中</td><td>采用与组织结果</td><td>条件上升</td><td>变革推动者、超级管理者</td></tr>
+          <tr><th>L5 战略</th><td>方向选择、资本配置、系统/新业务构建</td><td>放大杠杆与错误</td><td>高</td><td>中低</td><td>企业级与期权</td><td>显著分化</td><td>新业务构建者、AI 系统领导者</td></tr>
+        </tbody>
+      </table></div>
+      <p>AI 工具使用会像办公软件一样逐渐成为基础能力，但速度取决于行业监管、数据环境和工具可获得性。短期职位广告仍可能为 AI 技能支付溢价；长期企业不应为"会登录、会提示"持续支付津贴，而应为跨模型迁移、工作流重构和净结果付薪。</p>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>能力模型必须同时保留 L2 深度与 L3—L5 责任半径。只强调"未来软技能"会导致专业空心化；只强调工具和产出会导致价值、风险与组织采用失真。</p></div>
+    </section>
+
+    <!-- ============ 第五章 ============ -->
+    <section id="ch5">
+      <h2 class="chap"><span class="cn">Chapter 05</span>技能价值迁移与未来高溢价人才图谱</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>技能价值不会沿一条直线变化。AI 前以信息、工具和经验为主要稀缺来源；AI 增强阶段，专业能力与 AI 结合产生阶段性溢价；AI 原生阶段，通用使用成为门槛，人机任务编排、模型评测、工作流设计、治理和高责任判断成为组合。最值得投资的不是某个工具认证，而是能跨模型和情境迁移的能力系统。</p></div>
+
+      <h3>AI 前—AI 增强—AI 原生的价值迁移</h3>
+      <figure class="fig"><div class="ph">图表 15 · 迁移热力图</div><figcaption><b>图表15 技能价值迁移地图。</b> 颜色显示相对溢价由下降、门槛化、分化到上升；阶段表示组织工作方式，不是固定年份。AI 原生并不意味着无人组织，而是任务、决策权与人机网络围绕 AI 能力重新设计。</figcaption></figure>
+      <div class="tw"><table>
+        <caption>图表16 主要技能的三阶段迁移</caption>
+        <thead><tr><th>能力</th><th>AI 前</th><th>AI 增强阶段</th><th>AI 原生阶段</th><th>迁移判断</th></tr></thead>
+        <tbody>
+          <tr><th>信息检索</th><td>独立高价值</td><td>检索＋来源核验</td><td>基础门槛，价值在证据架构</td><td>下降/门槛化</td></tr>
+          <tr><th>内容生产</th><td>产量与表达有溢价</td><td>人机共创、编辑</td><td>供给充足，品牌/分发/结果组合</td><td>下降并分化</td></tr>
+          <tr><th>数据分析</th><td>工具与方法稀缺</td><td>自然语言分析＋专业校验</td><td>语义层、因果、决策系统</td><td>基础下降，高阶上升</td></tr>
+          <tr><th>编程</th><td>语法与实现稀缺</td><td>代码生成＋审查</td><td>架构、智能体编排、评测与维护</td><td>两极分化</td></tr>
+          <tr><th>专业知识</th><td>信息与资格优势</td><td>验证、解释与例外</td><td>领域＋责任＋系统能力</td><td>独立价值下降，组合上升</td></tr>
+          <tr><th>沟通表达</th><td>产出与语言壁垒</td><td>生成、翻译、准备自动化</td><td>承诺、谈判、信任条件性高</td><td>常规下降，复杂上升</td></tr>
+          <tr><th>创造力</th><td>新颖想法稀缺</td><td>方案数量激增</td><td>问题选择、品位、市场验证</td><td>从发散转向选择</td></tr>
+          <tr><th>审美判断</th><td>制作与品位混合</td><td>生成成本下降</td><td>受品牌、文化、IP 和市场约束的品位</td><td>条件上升</td></tr>
+          <tr><th>战略/商业判断</th><td>信息收集耗时</td><td>场景生成、模拟增强</td><td>取舍、资本配置、责任仍稀缺</td><td>上升但需专业基础</td></tr>
+          <tr><th>系统思维</th><td>依赖资深经验</td><td>AI 辅助建模</td><td>瓶颈、外部性、人机网络设计</td><td>上升</td></tr>
+          <tr><th>同理心/信任</th><td>人际互动优势</td><td>常规互动自动化</td><td>高风险、长期关系与组织变革</td><td>条件上升</td></tr>
+          <tr><th>AI 工作流设计</th><td>不存在/边缘</td><td>阶段性稀缺</td><td>逐步产品化，复杂系统仍高价值</td><td>先升后分化</td></tr>
+          <tr><th>AI 治理</th><td>局部数据治理</td><td>风险、评测、权限增加</td><td>连续保证与组织问责</td><td>持续上升</td></tr>
+          <tr><th>人机任务编排</th><td>零散自动化</td><td>多工具协作</td><td>动态智能体网络和例外架构</td><td>上升</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>五类迁移结论</h3>
+      <p>第一类是 <b>快速商品化</b>：通用检索、初稿、基础翻译、模板内容、简单代码和标准报告。第二类是 <b>门槛化</b>：通用 AI 素养、提示、基本数据与安全常识。第三类是 <b>结构性分化</b>：编程、专业知识、分析、创意和沟通；低情境部分下降，高情境/责任部分上升。第四类是 <b>持续升值但必须可证</b>：问题定义、校准判断、系统思考、责任与风险、跨域整合、变革与关键关系。第五类是 <b>新组合</b>：领域＋AI 工作流＋评测治理＋结果所有权；或深度专业＋智能体编排＋组织影响。</p>
+      <p>技能迁移速度取决于四个变量：模型能力和价格、任务可标准化程度、责任/监管可转移性、企业互补资产成熟度。低风险数字内容可能在一年内门槛化；医疗、信贷和工业控制可能经历更长的增强期；某些深度专家能力会因 AI 扩大问题空间而更加稀缺。</p>
+
+      <h3>AI 杠杆不是使用量，而是风险调整的可复制结果</h3>
+      <p>AI 杠杆应计算为：合格增量结果除以人类工时、审查、返工和等价技术成本。登录次数、对话量、生成文档数和代码行只能解释活动，不能解释价值。单一企业 802 名开发者、196,212 个 PR 的纵向预印本显示，人均月 PR 均值由 21.2 升至 44.3，本报告据此计算约 2.09 倍，同时审查负荷约翻倍；企业存在明确"2×"管理要求，采用非随机，因此不能把 2 倍直接归因于 AI，也不能等同净业务价值<a class="cite">[E73]</a>。这正说明吞吐与瓶颈必须同图呈现。</p>
+      <figure class="fig"><div class="ph">图表 17 · AI 杠杆 × 净价值</div><figcaption><b>图表17 AI 杠杆与人才价值关系。</b> 横轴为自动化/增强深度，纵轴为风险调整净价值。低质量规模化会落入"产出膨胀、净值有限"；高质量、可复用且责任清晰才进入"战略杠杆"。</figcaption></figure>
+
+      <h3>十类未来高溢价人才</h3>
+      <div class="tw"><table>
+        <caption>图表18 未来人才类型图谱</caption>
+        <thead><tr><th>人才类型</th><th>价值来源</th><th>稀缺性</th><th>培养难度</th><th>主要证据</th><th>薪酬趋势/工具</th></tr></thead>
+        <tbody>
+          <tr><th>AI 增强型专业人才</th><td>同类任务更快更好且质量稳定</td><td>中</td><td>中</td><td>任务对照、质量、采用</td><td>阶段性带宽/奖金</td></tr>
+          <tr><th>高判断责任专家</th><td>高风险例外、签字与后果</td><td>高</td><td>高</td><td>决策、事故、组合结果</td><td>基薪、责任津贴、递延奖金</td></tr>
+          <tr><th>跨领域整合者</th><td>连接业务、技术、风险和客户</td><td>高</td><td>高</td><td>端到端里程碑、冲突解决</td><td>角色溢价、项目奖、LTI</td></tr>
+          <tr><th>AI 工作系统设计者</th><td>把工具嵌入数据、流程、评测与治理</td><td>阶段性高</td><td>中高</td><td>净价值、复用、维护成本</td><td>项目奖、带宽、LTI</td></tr>
+          <tr><th>组织变革推动者</th><td>把方案转为稳定采用与行为改变</td><td>情境高</td><td>高</td><td>采用质量、周期、信任、离职</td><td>团队/变革奖金</td></tr>
+          <tr><th>高影响力个体贡献者</th><td>不靠管理人数产生跨团队杠杆</td><td>高</td><td>高</td><td>平台/标准复用、团队增益</td><td>专家双轨、LTI</td></tr>
+          <tr><th>超级管理者</th><td>管理人＋智能体网络与决策跨度</td><td>中高</td><td>高</td><td>团队净结果、风险、人才成长</td><td>管理带宽但不按人数</td></tr>
+          <tr><th>新业务构建者</th><td>选择机会、产品化、资本纪律</td><td>高、方差大</td><td>高</td><td>市场验证、收入、期权</td><td>里程碑股权/LTI</td></tr>
+          <tr><th>顶尖深度专家</th><td>隐性知识、前沿问题、验证边界</td><td>极高</td><td>极高</td><td>同行、成果、事故避免</td><td>高基薪、长期留任</td></tr>
+          <tr><th>人机协同团队领导者</th><td>任务编排、异常升级、团队学习</td><td>中高</td><td>中高</td><td>端到端流程与学习</td><td>团队奖金、角色溢价</td></tr>
+        </tbody>
+      </table></div>
+      <p>复合型人才并不普遍优于单一专家。若任务需要极深科学、工程或临床知识，顶尖专家的边际价值可能因 AI 放大而更高。复合型人才的优势出现在跨域摩擦和系统整合是主要瓶颈的场景。企业应建立"双塔结构"：一塔保持深度专业与责任，另一塔发展跨域系统与组织杠杆；两者通过项目而非职位等级强行合并。</p>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>未来人才盘点不应问"谁最会用 AI"，而应问"谁能承担更大问题范围、谁能稳定校准风险、谁能把方法复制给组织、谁能培养下一代"。这四个问题分别对应价值、责任、杠杆和人才管道。</p></div>
+    </section>
+
+    <!-- ============ 第六章 ============ -->
+    <section id="ch6">
+      <h2 class="chap"><span class="cn">Chapter 06</span>六大行业不会以同一速度、同一方式重估能力</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>行业差异的核心不在"是否采用 AI"，而在数据可用性、任务标准化、错误成本、责任制度、实体世界依赖和需求弹性。科技与专业服务的内容和代码任务变化更快；金融和医疗的判断责任保护专业溢价；制造的价值取决于 OT/IT 数据与安全；零售消费在规模化前线流程和创意供应上变化显著。统一技能清单会误导资本与人才配置。</p></div>
+      <figure class="fig"><div class="ph">图表 19 · 行业热力图</div><figcaption><b>图表19 六行业 AI 暴露与战略稀缺能力热力图。</b> 横轴为任务标准化、数据可得、责任风险、实体依赖和需求弹性；纵轴为六行业。颜色为研究者基于 E06—E17、E25—E45 及案例的结构化判断，不是市场统计排名。</figcaption></figure>
+      <div class="tw"><table>
+        <caption>图表20 六行业统一比较矩阵</caption>
+        <thead><tr><th>行业</th><th>高暴露岗位/任务</th><th>价值下降技能</th><th>价值上升能力</th><th>新关键人才</th><th>最值得投资</th><th>定价调整重点</th><th>未来 3 年风险</th></tr></thead>
+        <tbody>
+          <tr><th>科技</th><td>编码、测试、文档、支持、分析</td><td>语法实现、样板代码、基础排错</td><td>架构、评测、安全、产品判断、审查系统</td><td>智能体平台架构师、AI 产品负责人、评测/安全专家</td><td>代码库情境、审查能力、平台复用</td><td>功能价值/质量替代代码量；专家双轨/LTI</td><td>生成超过审查、技术债、初级培养断层</td></tr>
+          <tr><th>金融</th><td>研究、客服、文档、合规筛查、建议准备</td><td>通用检索、初稿、标准产品解释</td><td>受监管判断、模型风险、客户信任、例外审批</td><td>AI 风控产品负责人、模型保证专家、增强型顾问</td><td>数据治理、责任链、客户情境</td><td>A 权重提高；递延、扣回和责任津贴</td><td>责任空洞、偏差、错误规模化、监管滞后</td></tr>
+          <tr><th>制造</th><td>维护文档、排程、质量分析、工程辅助</td><td>标准文档、简单故障检索</td><td>工艺系统、工业安全、OT/IT 整合、现场异常</td><td>工业 AI 系统工程师、数字线程负责人</td><td>实体数据、边缘部署、安全与变更</td><td>项目/团队价值池；长期系统人才</td><td>试点孤岛、数据断裂、安全事故、技能老化</td></tr>
+          <tr><th>医疗</th><td>记录、编码、知识查询、排班</td><td>文档生成、通用资料汇总</td><td>临床判断、患者信任、伦理、责任与工作流</td><td>临床 AI 治理负责人、环境式 AI 流程专家</td><td>结果/福祉/净成本联合测量</td><td>责任和福祉进入绩效；不按吞吐单一付薪</td><td>记录节时未转化、自动化偏差、耗竭转移</td></tr>
+          <tr><th>零售消费</th><td>客服、翻译、内容、排班、门店知识</td><td>脚本服务、通用内容、基础翻译</td><td>复杂服务、品牌品位、门店例外、规模化采用</td><td>前线 AI 运营者、品牌 AI 编辑、流程设计者</td><td>一线嵌入、品牌/IP、客户升级</td><td>团队结果和客户指标；技能津贴期限化</td><td>低质量自动化、品牌稀释、前线监控与信任</td></tr>
+          <tr><th>专业服务</th><td>研究、幻灯、模型、合同、审计准备</td><td>初级搜集、模板分析、标准交付</td><td>问题定义、客户情境、因果、判断、影响</td><td>AI 增强顾问、高责任审计/法律专家、知识系统架构师</td><td>学徒制、知识资产、客户责任</td><td>由工时向成果/责任/复用迁移</td><td>金字塔变薄、质量难证、商业模式与收费冲突</td></tr>
+        </tbody>
+      </table></div>
+
+      <h4>科技：从"写代码"转向"交付可维护系统"</h4>
+      <p>编程助手在三家企业现场实验中使完成任务数合并提高 26.08%，但单项结果噪声较大，且未完整反映长期质量和维护。复杂代码库研究的反例进一步说明上下文与验证的重要性。科技企业应把绩效从代码行、提交和 PR 量转为经合并功能价值、可靠性、安全、审查负荷、回滚与长期维护；对能构建评测、上下文、代理组件和开发平台的高影响力 IC 使用专家带宽与长期激励。</p>
+      <h4>金融：知识检索商品化，责任与客户情境升值</h4>
+      <p>财富管理、投研和合规文档高度暴露，但建议必须符合客户目标、产品适当性和监管要求。Morgan Stanley 案例显示受控知识访问显著扩大且保留顾问复核；它说明检索系统可规模化，不证明人员或薪酬结果。金融机构应提高 SCALE-R 中的 A 权重，明确 AI 建议的签字、抽检、异常升级和事故回看；不能以活跃率替代合规质量和客户结果。</p>
+      <h4>制造：真正稀缺的是把 AI 嵌入物理系统</h4>
+      <p>制造价值来自设备、工艺、质量、安全和供应链的实体约束。工业 Copilot 的公开材料主要证明必须连接工程数据、自动化系统和安全边界，缺乏可比生产率、人员与薪酬结果。制造企业应优先培养"领域工程＋数据/模型＋OT 安全＋变更管理"组合，而非单纯提示工程师；项目价值必须扣除集成、停机、验证和维护成本。</p>
+      <h4>医疗：福祉可能先于吞吐量体现</h4>
+      <p>66 名临床人员、24 周的随机阶梯楔形研究显示环境式 AI 记录降低耗竭和人际疏离；社论提醒记录节时尚不能自动等同提高吞吐、净成本或临床质量。医疗组织应把福祉、患者关系、记录质量、复核和临床结果联合评估，避免将节时全部转成更高接诊量。责任和伦理判断的价值持续，但必须有临床与组织结果而非职业神圣化叙事。</p>
+      <h4>零售消费：规模部署的瓶颈是前线流程与品牌治理</h4>
+      <p>Walmart 面向 150 万员工的工具覆盖排班、翻译和流程指南，早期估计显示主管排班规划由 90 分钟降至 30 分钟；这些是公司口径，不能与工资投资建立因果联系<a class="cite">[E61]</a>。L'Oréal CreAItech 整合多模型并设置品牌、IP、真人形象和碳排规则，说明审美只有在品牌责任与市场结果约束下才可能升值。零售消费应将前线员工声音、复杂服务升级和品牌一致性纳入净价值。</p>
+      <h4>专业服务：商业模式与人才金字塔同时重构</h4>
+      <p>短时写作和咨询实验显示明显提速提质<a class="cite">[E26—E27]</a>，但专业服务的客户价值还包括定义问题、合并多源证据、处理政治情境和推动执行。若初级工时减少而收费仍以工时为主，企业会同时面临收入模式和学徒制冲击。应把内部训练从"重复制作交付件"转为案例诊断、反证、客户访谈、影子判断和 AI 审计，并逐步将收费与结果、责任和知识资产复用连接。</p>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>各行业应使用同一框架、不同权重。统一的是证据纪律和净价值口径；不同的是责任、数据、实体系统和客户承诺。行业外部基准只能作为校准，不能替代本企业任务数据。</p></div>
+    </section>
+
+    <!-- ============ 第七章 ============ -->
+    <section id="ch7">
+      <h2 class="chap"><span class="cn">Chapter 07</span>企业案例：从任务变化到价值分配</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>企业案例最强的用途是解释"任务如何改变、互补资产是什么、责任保留在哪里"，最弱的用途是证明通用 ROI、裁员或薪酬回报。12 个核心案例中，几乎没有企业公开披露岗位—任务—绩效—薪酬的完整连接；新增 4 个薪酬政策案例说明企业开始试验，却仍缺公平、留任和长期效果。案例应作为机制证据而非市场平均。</p></div>
+      <div class="tw"><table>
+        <caption>图表21 十二个核心案例横向总览</caption>
+        <thead><tr><th>案例</th><th>行业</th><th>被改变任务</th><th>下降技能</th><th>上升能力</th><th>可核验结果层级</th><th>结构调整/薪酬证据</th><th>普适性与局限</th></tr></thead>
+        <tbody>
+          <tr><th>Morgan Stanley</th><td>金融</td><td>受控知识检索、建议准备</td><td>人工搜寻</td><td>合规校准、客户责任</td><td>采用/知识访问，公司口径</td><td>未披露</td><td>高风险知识流程机制强；无独立财务结果</td></tr>
+          <tr><th>Moderna</th><td>医疗/生科</td><td>内部 GPT、研发支持</td><td>通用信息处理</td><td>问题所有权、科学判断</td><td>采用与 GPT 数量</td><td>未披露</td><td>说明参与不等于价值；结果有限</td></tr>
+          <tr><th>BBVA</th><td>金融</td><td>法务与知识工作流</td><td>通用查询</td><td>工作流设计、治理</td><td>许可/自报节时</td><td>未披露</td><td>证明从许可到流程的距离</td></tr>
+          <tr><th>Klarna</th><td>金融科技/客服</td><td>首轮客服与分流</td><td>常规回复</td><td>复杂升级、同理心、质量</td><td>对话/解决时间，公司口径</td><td>人工回摆，未见个人薪酬</td><td>自动化规模大；收益预测与实际需区分</td></tr>
+          <tr><th>Accenture/GitHub</th><td>科技服务</td><td>编码任务</td><td>样板实现</td><td>审查、架构、上下文</td><td>现场实验任务数</td><td>无工资</td><td>可识别任务效应，不能外推净代码价值</td></tr>
+          <tr><th>BCG</th><td>专业服务</td><td>分析与创意任务</td><td>标准分析</td><td>能力边界识别、判断</td><td>随机实验</td><td>无岗位/薪酬</td><td>边界内外差异关键；模拟任务</td></tr>
+          <tr><th>P&amp;G</th><td>消费品</td><td>创新任务、跨职能协同</td><td>部分信息协调</td><td>目标选择、综合判断</td><td>预注册现场实验</td><td>无长期结构数据</td><td>AI 可跨职能，不证明永久替代团队</td></tr>
+          <tr><th>环境式 AI 记录</th><td>医疗</td><td>文档记录</td><td>记录负担</td><td>临床关系、责任</td><td>福祉随机实验</td><td>无薪酬</td><td>价值先体现福祉；吞吐未证</td></tr>
+          <tr><th>Walmart</th><td>零售</td><td>排班、翻译、流程指南</td><td>手工查询/翻译</td><td>前线例外、流程嵌入</td><td>覆盖/估计节时</td><td>工资投资不可归因</td><td>大规模前线机制；公司口径</td></tr>
+          <tr><th>L'Oréal</th><td>消费品/创意</td><td>素材生成</td><td>制作稀缺</td><td>品牌品位、IP 治理</td><td>采用</td><td>未披露</td><td>说明受约束审美；无市场结果</td></tr>
+          <tr><th>中国平安</th><td>金融</td><td>传统 AI 客服与流程</td><td>标准服务</td><td>规模化流程运营</td><td>历史场景/服务量</td><td>未披露</td><td>重要历史基线；非当前生成式 AI</td></tr>
+          <tr><th>Anthropic 内部</th><td>科技</td><td>工程/研究任务委派</td><td>部分执行</td><td>任务编排、边界判断</td><td>自报＋内部遥测</td><td>无工资</td><td>极端采用组织；技能萎缩担忧不可外推</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>三类可迁移案例机制</h3>
+      <p>第一类是 <b>受控知识系统</b>。Morgan Stanley、BBVA 和 Moderna 的共同点不是拥有聊天界面，而是把知识、权限和业务场景连接，并保留责任人。可迁移原则是：知识可检索、来源可追溯、输出有边界、人工对客户/科学/法律结果负责。</p>
+      <p>第二类是 <b>吞吐与审查的再平衡</b>。Klarna、编程助手和内容生成显示前端产出可迅速扩大，但复杂升级、代码审查、品牌/IP 和客户信任成为新瓶颈。企业必须把审查容量、异常队列与下游质量作为自动化商业案例的一部分。</p>
+      <p>第三类是 <b>组织协同重构</b>。P&amp;G 实验显示个人＋AI 在特定创新任务上可达到无 AI 团队水平，并跨越部分职能知识边界。这不意味着团队失去价值，而是常规信息协调的相对价值下降，目标设定、冲突处理、承诺和执行动员的相对价值上升。</p>
+
+      <h3>四个薪酬与绩效政策边界案例</h3>
+      <div class="tw"><table>
+        <caption>图表22 企业"AI 贡献—绩效—薪酬"政策探索</caption>
+        <thead><tr><th>案例</th><th>已知政策</th><th>可借鉴</th><th>主要风险</th><th>证据状态</th></tr></thead>
+        <tbody>
+          <tr><th>Omnisend</th><td>报道称计划给突出 AI 工作流贡献者 2%—4% 加薪，观察节时/成本、业务影响和广泛采用</td><td>评价工作流影响而非登录</td><td>计划未验证；经理裁量；固定工资过早资本化</td><td>K13/E75，制度案例</td></tr>
+          <tr><th>Brex</th><td>报道称向 225 名以上员工发现货奖金；列举具体入职流程大幅缩短</td><td>早期用一次性项目奖、连接具体流程</td><td>公司自报、个人贡献和流程结果未连接</td><td>K14/E76，制度案例</td></tr>
+          <tr><th>Meta</th><td>报道称拟把"AI 驱动影响"纳入绩效，2025 不直接用个人使用指标</td><td>从使用量转向结果</td><td>实际评分、奖金和公平效果未知</td><td>K15/E77，计划案例</td></tr>
+          <tr><th>Duolingo</th><td>媒体称撤回 AI 使用绩效指标计划</td><td>使用量 KPI 易游戏化并损害信任</td><td>一手文件和原因权重待核</td><td>K16/E78，边界案例</td></tr>
+        </tbody>
+      </table></div>
+      <p>这四个案例共同支持"项目/结果导向优于使用量导向"，却不证明任何比例适合其他企业。Omnisend 的 2%—4% 只能作为一家公司计划的政策参数，不能成为市场基准；Brex 现货奖金说明可逆试验的治理价值；Meta 与 Duolingo 共同提醒，企业应奖励可验证影响而非强制活跃。</p>
+
+      <h3>案例使用的八条核验规则</h3>
+      <ol>
+        <li>区分公司、供应商、媒体和独立研究；</li>
+        <li>披露样本、时间与结果层级；</li>
+        <li>"相当于 X 名员工工作量"不是已裁 X 人；</li>
+        <li>预测收益不是已实现利润；</li>
+        <li>许可覆盖不是实际采用；</li>
+        <li>自报节时不是客观生产率；</li>
+        <li>工资上涨与 AI 同期发生不代表 AI 造成；</li>
+        <li>未披露招聘、绩效或薪酬时明确写"未核验"。</li>
+      </ol>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>案例选择不应按品牌知名度，而应按与本企业任务、数据、责任和流程成熟度的可比性。每个案例只能支持它实际测量的那一段证据链。</p></div>
+    </section>
+
+    <!-- ============ 第八章 ============ -->
+    <section id="ch8">
+      <h2 class="chap"><span class="cn">Chapter 08</span>中国企业：从人才数量红利转向关键能力密度</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>中国的人才规模、工程化速度、完整产业链和组织执行仍是 AI 时代的重要互补优势，但高学历与基础数字技能供给扩大，会降低它们作为独立信号的稀缺性。未来竞争差异来自单位关键岗位中"领域＋判断＋系统重构＋治理＋组织动员"的密度，以及企业能否把快速试点转为可复用、风险可控的生产系统。该判断为中等置信度战略假设，尚缺中国员工级 U—T—P—W 数据验证。</p></div>
+
+      <h3>人才数量仍重要，但不是充分条件</h3>
+      <p>教育部预计 2025 届高校毕业生 1,222 万人，同比增加 43 万人；国家统计局披露 2025 年全国就业人员 72,504 万人、城镇就业 47,535 万人。供给规模提升有利于工程、应用和场景覆盖，却不能直接证明学历溢价下降或 AI 能力密度提高。2025 年城镇非私营单位平均工资 129,441 元、私营单位 71,590 元，口径覆盖约 306.2 万家法人单位，但平均工资差异混合了行业、所有制、岗位和地区，不能当作技能溢价。</p>
+      <p>学历与证书过去承担筛选功能；当高学历供给增加、AI 使标准知识输出更易获得，企业必须提高工作样本、项目证据、问题定义和校准判断的权重。同时，不能因"技能优先"完全取消学历信号：某些科学、临床和工程岗位仍需系统训练，技能数据也会过时并产生测评偏差。</p>
+
+      <h3>工程师红利如何转为能力红利</h3>
+      <p>工程师数量优势的转化路径是：从功能实现转向领域建模、数据/知识工程、评测、安全、系统架构、产品化和跨部门落地。基础代码生成门槛下降后，低上下文实现价值受压；熟悉复杂系统、能定义质量、建立评测并承担长期维护的工程师更重要。制造业还需把 OT 安全、设备知识和现场变更纳入组合。</p>
+      <p>企业应测量三项密度：关键任务上达到 L3—L5 门槛的人数/需求；关键能力是否集中于少数单点；方法被多少团队在质量稳定下复用。单纯培训人数、证书数和模型调用量会制造"工具普及但组织生产率不显著"的假象。</p>
+
+      <h3>快速执行优势与高质量判断的张力</h3>
+      <p>中国企业常见优势是快速试点、强目标和资源集中；风险是用活动指标替代价值、把管理要求与技术效果混淆、忽视员工声音和下游负担。E73 的"2×"企业案例虽非中国样本，却提供可迁移警示：当管理层同时提出吞吐目标，采用与产出相关不能解释 AI 单独作用。中国企业应在试点前冻结基线、质量和停止标准，允许报告负结果，并由财务和风险共同验收净价值。</p>
+      <p>高质量判断也不能被浪漫化为少数高管的直觉。它需要一线数据、异议机制、决策日志、事后复盘和明确责任。如果组织只奖励速度和服从，AI 会扩大错误方案的执行杠杆；如果只强调治理而不给业务授权，AI 会停留在安全但低价值的工具层。</p>
+
+      <h3>民企、国企与跨国公司的定价差异</h3>
+      <div class="tw"><table>
+        <caption>图表23 中国企业三类治理情境</caption>
+        <thead><tr><th>维度</th><th>民营企业</th><th>国有企业</th><th>跨国公司在华机构</th><th>定价机制含义</th></tr></thead>
+        <tbody>
+          <tr><th>决策速度</th><td>通常较快</td><td>多级审批、合规强</td><td>全球/本地双重治理</td><td>试点周期和证据窗口不同</td></tr>
+          <tr><th>工资约束</th><td>市场化、方差较大</td><td>工资总额、等级和公平约束强</td><td>全球职级与本地市场并存</td><td>动态溢价占比与工具不同</td></tr>
+          <tr><th>价值导向</th><td>增长/现金流/效率</td><td>战略任务、公共责任、合规</td><td>全球标准、本地业务</td><td>C、A、T 权重不同</td></tr>
+          <tr><th>组织风险</th><td>短期主义、强 KPI</td><td>形式化采用、激励不足</td><td>数据跨境、授权边界</td><td>证据闸门与员工参与重点不同</td></tr>
+          <tr><th>推荐工具</th><td>项目奖、股权、角色带宽</td><td>岗位底座、项目/技能津贴、集体校准</td><td>全球带宽＋本地项目/LTI</td><td>不宜复制单一公式</td></tr>
+        </tbody>
+      </table></div>
+      <p>人社、财政、国资政策已推动技能价值与薪酬分配衔接；辽宁政策提出 AI 技能等级、协议工资和项目工资等工具。这些只能证明制度空间与方向，不能证明企业已实施或产生效果。国企更适合在岗位底座上用期限化津贴和项目团队奖试点，避免频繁个人重定价破坏公平；民企可用更强结果和股权激励，但需防止自报节时与短期吞吐；跨国公司需处理全球职级、数据和本地市场的错配。</p>
+
+      <h3>避免"AI 工具普及、组织生产率不显著"</h3>
+      <figure class="fig"><div class="ph">图表 24 · 价值转化漏斗</div><figcaption><b>图表24 中国企业 AI 价值转化漏斗。</b> 从许可/培训到有效任务使用、工作流重构、净结果、跨团队复制和价值分配；每层设置停止标准。漏斗不是采用率 KPI，而是证据成熟度。</figcaption></figure>
+      <p>常见失败原因包括：没有任务基线；数据和权限未连接；流程所有者不清；节时未转化为需求或成本；审查与返工未计；管理者担心被替代而不授权；一线担心监控而影子使用；项目成功后缺维护预算；薪酬仍只奖励管理人数和短期量。解决这些问题需要 CEO、CFO、CIO、风险与 CHRO 共同负责，而非由 HR 或 IT 单独推动。</p>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>中国章节不应复制欧美的暴露率、生产率或工资系数。先在本企业建立 U—T—P—W 微观数据，再按所有制、行业、地区和责任制度校准 SCALE-R 与 TVI 权重。</p></div>
+    </section>
+
+    <!-- ============ 第九章 ============ -->
+    <section id="ch9">
+      <h2 class="chap"><span class="cn">Chapter 09</span>传统人才与薪酬体系为何系统性误判价值</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>传统体系的问题不是"岗位"本身，而是把岗位、职级、学历、工龄和管理人数当作能力与价值的充分代理。AI 使岗位内部任务价值快速分化，高杠杆 IC、跨域整合者、工作流设计者和高责任专家可能被低估；同时，完全取消岗位体系会损害公平、合规、预算纪律和职业信任。可行方向是保留岗位底座，用动态能力、结果、责任和杠杆补充，而非替代全部治理结构。</p></div>
+
+      <h3>九种传统机制的失效方式</h3>
+      <div class="tw"><table>
+        <caption>图表25 传统人才定价与 AI 时代新型定价对比</caption>
+        <thead><tr><th>传统机制</th><th>过去的合理性</th><th>AI 时代的失真</th><th>仍需保留的功能</th><th>修正方向</th></tr></thead>
+        <tbody>
+          <tr><th>按岗位定薪</th><td>任务较稳定、便于比较</td><td>同岗任务组合与 AI 杠杆差异扩大</td><td>公平、预算、合规</td><td>岗位底座＋动态附加项</td></tr>
+          <tr><th>按职级定薪</th><td>责任与能力大致同步</td><td>高杠杆 IC 未必管理更多人</td><td>职业路径、授权</td><td>专家/管理双轨、责任半径</td></tr>
+          <tr><th>按工龄定薪</th><td>经验代理隐性知识</td><td>年限不等于更新、判断或结果</td><td>保留与组织知识</td><td>以情境能力和迁移速度补充</td></tr>
+          <tr><th>按学历/资格</th><td>降低筛选成本、保障基础训练</td><td>标准知识供给增加、信号拥挤</td><td>某些专业准入和系统训练</td><td>工作样本＋资格双证据</td></tr>
+          <tr><th>年度绩效</th><td>控制成本、连接经营周期</td><td>AI 影响与长期质量跨周期</td><td>经营纪律</td><td>项目/长期结果、递延与回看</td></tr>
+          <tr><th>管理人数决定价值</th><td>工业层级的资源代理</td><td>智能体和高杠杆 IC 改变管理跨度</td><td>管理责任</td><td>以决策、网络和团队净结果评价</td></tr>
+          <tr><th>固定岗位说明书</th><td>明确职责</td><td>任务和工具半年内改变</td><td>法律边界、责任底座</td><td>任务注册表＋动态模块</td></tr>
+          <tr><th>静态能力模型</th><td>统一语言</td><td>技能半衰期、组合和情境被忽视</td><td>发展路径</td><td>版本化能力与行为证据</td></tr>
+          <tr><th>外部薪酬对标</th><td>市场校准</td><td>AI 岗位标签混合资历/企业/职业选择</td><td>招聘竞争信息</td><td>只校准岗位带宽和稀缺，不替代内部价值</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>被系统性低估的六类贡献</h3>
+      <p>第一，高杠杆 IC 通过平台、标准和评测提升多个团队，却因没有下属而职级受限。第二，跨领域人才在业务、技术、法务和风险间减少摩擦，成果难归于单一岗位。第三，AI 工作流设计者的价值来自流程、数据和治理，不等于"写提示"。第四，重构业务流程的人可能减少自身团队工作量，反而在传统预算逻辑中受罚。第五，高判断责任人员以避免重大错误创造价值，短期收入报表不显示。第六，变革推动者通过信任和员工参与提高采用质量，贡献分散且滞后。</p>
+      <p>传统年度绩效特别容易重复计价或漏计：同一项目增量可能被业务负责人、模型工程师和销售分别全额申报；风险避免和终止坏项目则没有"产出"。因此，应先计算团队净价值池，再按事前角色、里程碑、同行与使用者证据分配，不用伪精确算法制造客观幻觉。</p>
+
+      <h3>为什么不能完全放弃岗位和薪酬等级</h3>
+      <p>动态技能定价可能带来五类风险：技能标签通胀；频繁重定价导致收入不稳定；管理者用难测"软技能"强化偏见；工具和高价值任务机会不平等被当作个人能力差；薪酬漂移和内部压缩破坏团队信任。OECD 对技能优先实践的研究强调技能数据会过时、测评可偏、需要劳动者保护。</p>
+      <p>岗位仍承担责任、预算、合规、职业路径和内部公平。岗位带宽应体现长期稳定的职责与市场价值；动态部分承接短期稀缺、项目结果、风险责任和长期平台价值。技能津贴需有 6—12 个月到期复评，项目奖金需质量回看，重大风险判断需递延与扣回，长期平台/新业务才使用 LTI。</p>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>改革目标不是让薪酬每月随算法波动，而是提高"为什么付这笔钱"的可解释性。稳定底座保护信任，动态附加项提高资源配置效率，两者缺一不可。</p></div>
+    </section>
+
+    <!-- ============ 第十章 ============ -->
+    <section id="ch10">
+      <h2 class="chap"><span class="cn">Chapter 10</span>建立"岗位底座＋动态能力溢价"的定价体系</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>企业应把"价值潜力"和"可安全支付"分开。SCALE-R 回答某能力在特定情境是否值得投资；TVI-Value 整合岗位、稀缺、结果、杠杆、责任、影响、成长和长期价值；TVI-Payable 再乘以证据、归因、持续性和治理系数，决定使用基本工资、津贴、奖金、递延或 LTI。没有完整 U—T—P—W 数据时，不应按 AI 使用量永久加薪。</p></div>
+
+      <h3>人才价值指数 TVI</h3>
+      <p>各维度先标准化到 0—1：</p>
+      <div class="callout"><p style="font-family:var(--font-mono);font-size:15px">TVI-Value = 25J ＋ 15S ＋ 20C ＋ 10L ＋ 10A ＋ 10E ＋ 5G ＋ 5T</p></div>
+      <p>J 为岗位底座，S 为稀缺能力，C 为经验证结果，L 为 AI 与系统净杠杆，A 为判断与风险责任，E 为组织与团队影响，G 为成长与迁移速度，T 为长期战略价值。权重合计 100，是试点起点；金融、医疗和工业安全可提高 A，平台型企业可提高 L 与 T，强关系业务可提高 E。调整必须在周期前公布，不能为个人事后改权重。</p>
+      <figure class="fig"><div class="ph">图表 26 · TVI 堆叠 + 四系数闸门</div><figcaption><b>图表26 人才价值指数（TVI）模型。</b> 图中将 25% 的岗位底座与 75% 的动态价值分开；动态部分只有通过证据、归因、持续和治理系数后才进入可支付区间。</figcaption></figure>
+      <div class="tw"><table>
+        <caption>图表27 TVI 维度与薪酬工具</caption>
+        <thead><tr><th>维度</th><th>权重</th><th>推荐指标</th><th>最合适的薪酬工具</th><th>复评</th></tr></thead>
+        <tbody>
+          <tr><th>J 岗位底座</th><td>25</td><td>职责、复杂度、决策范围、外部带宽</td><td>基本工资</td><td>年度/职责变化</td></tr>
+          <tr><th>S 稀缺能力</th><td>15</td><td>合格候选率、招聘/培养周期、替代期</td><td>带宽＋期限化津贴</td><td>6—12 个月</td></tr>
+          <tr><th>C 经验证结果</th><td>20</td><td>增量收入、成本、质量、客户、风险</td><td>年度/项目/团队奖金</td><td>项目和年度</td></tr>
+          <tr><th>L 净 AI 杠杆</th><td>10</td><td>风险调整产出、复用、总成本、维护</td><td>项目奖、团队奖、角色溢价</td><td>3—12 个月</td></tr>
+          <tr><th>A 判断责任</th><td>10</td><td>决策额度、签字、事故、监管</td><td>基薪、责任津贴、递延奖金</td><td>风险窗口 2—3 年</td></tr>
+          <tr><th>E 组织影响</th><td>10</td><td>跨团队采用、客户、变革、人才成长</td><td>团队/变革奖金</td><td>半年—年度</td></tr>
+          <tr><th>G 成长迁移</th><td>5</td><td>达标速度、跨模型/任务迁移、校准改善</td><td>晋升、发展、短期津贴</td><td>半年</td></tr>
+          <tr><th>T 长期战略</th><td>5</td><td>平台复用、继任、战略里程碑、期权</td><td>LTI、留任、长期项目激励</td><td>2—4 年</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>从 TVI-Value 到 TVI-Payable</h3>
+      <div class="callout"><p style="font-family:var(--font-mono);font-size:15px">TVI-Payable = 25J ＋ (TVI-Value － 25J) × Qe × Qa × Qd × Qg</p></div>
+      <p>Qe 为证据覆盖，Qa 为归因质量，Qd 为持续性，Qg 为治理。L0—L1 自报/暴露证据只允许培训、认可或小额试点；L2 任务与过程证据可用有上限技能津贴或项目奖；L3 有客观绩效和可比基线可进入团队/年度奖金；只有 L4 同一员工实际使用、具体任务、客观净绩效、实际薪酬和可信反事实跨周期稳定，才具备调整长期带宽的强证据。</p>
+      <p>截至 2026 年 7 月，严格 L4 公开研究为 0 项。最接近的证据仍各缺一段：E25/E30 有任务绩效无实际薪酬；E29 连接采用与行政工资但绩效为自报节时代理；E65 有 AI 互动与工资档位正相关但无具体任务和客观绩效，且横截面不能因果解释。英国研究的回归系数 0.17 及 14.7% 示例是工资档位关联的说明，不是观察到的个人加薪<a class="cite">[E65]</a>。</p>
+      <figure class="fig"><div class="ph">图表 28 · 证据覆盖矩阵</div><figcaption><b>图表28 U—T—P—W 员工级证据覆盖矩阵。</b> 横轴为实际使用 U、具体任务 T、客观绩效 P、实际工资/流动 W；纵轴为 E25、E29、E30、E65、E73 等研究。没有一行四段同时达到客观与可信反事实。</figcaption></figure>
+
+      <h3>净 AI 价值与防止伪生产率</h3>
+      <p>项目净 AI 价值（NAV）应为增量收入、质量价值、避免损失和期权价值，减去许可、推理、数据、集成、复核、返工、治理、变革、维护和人员转置成本。节省工时只有在转化为更多合格产出、成本避免、等待减少、学习或福祉改善时进入价值；若时间变成长工日或下游审查，不能重复记收益。</p>
+      <div class="tw"><table>
+        <caption>图表29 常见错误指标及修正</caption>
+        <thead><tr><th>错误指标</th><th>为什么失真</th><th>修正指标</th><th>风险护栏</th></tr></thead>
+        <tbody>
+          <tr><th>对话/登录次数</th><td>活动不等于结果</td><td>通过质量门槛的任务链有效使用</td><td>不单独影响绩效/工资</td></tr>
+          <tr><th>生成文档数</th><td>产出膨胀、复核隐性</td><td>经采用且质量达标，扣返工</td><td>下游采用/错误</td></tr>
+          <tr><th>代码行/PR</th><td>易游戏化、审查拥堵</td><td>稳定功能价值、缺陷、回滚、审查</td><td>30/90 天质量</td></tr>
+          <tr><th>自报节时</th><td>基线与反事实主观</td><td>可比任务净工时＋时间去向</td><td>需求/成本/福祉</td></tr>
+          <tr><th>个人销售额</th><td>线索、价格、团队混杂</td><td>风险调整增量与归因</td><td>团队池、市场变化</td></tr>
+          <tr><th>"避免风险"叙述</th><td>反事实不可见</td><td>预设阈值、事故概率、独立复核</td><td>递延、扣回</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>团队贡献、隐性贡献与公平</h3>
+      <p>团队项目先计算价值池，再分个人。事前定义业务问题所有者、领域、数据、工程、验证、采用和风险角色；事后以里程碑、同行、使用者采用、质量与事故证据调整基础份额。不建议用 Shapley 值等伪精确方法替代管理判断，因为复杂项目的贡献不可完全分解。</p>
+      <p>隐性贡献包括终止低价值项目、发现高风险错误、建立评测与知识资产、培养初级人才、保护异议和员工信任。它们可通过停止标准、避免成本、复用团队数、事故复现、能力增量和申诉解决记录观察。支付工具以项目治理奖、风险奖、团队/领导力奖金和 LTI 为主，不凭印象直接加薪。</p>
+      <p>公平治理至少包括：同类员工工具、数据和任务机会可获得；分数有行为锚点；两名以上跨职能评委；按性别、年龄、地区、用工类型与职业入口做差异影响分析；员工可查看依据、纠正数据和申诉；只采集必要元数据，不默认保存完整提示和敏感内容；缺失记录不记为零；同一结果不得在 C、L、E 重复计价。</p>
+
+      <h3>四种典型人才的定价示例</h3>
+      <div class="tw"><table>
+        <caption>图表30 TVI 情境化定价示例</caption>
+        <thead><tr><th>情境</th><th>TVI 判断</th><th>支付建议</th><th>禁止动作</th></tr></thead>
+        <tbody>
+          <tr><th>高频用 AI 写报告，无质量/结果基线</th><td>U 高，C/L 未证</td><td>培训与认可</td><td>按提示或自报节时加固定工资</td></tr>
+          <tr><th>重构流程，被 4 团队采用，周期缩短 20%、质量稳定 6 个月</th><td>C/L/E 高，L3</td><td>团队项目奖＋个人角色奖，继续观察</td><td>全部价值归发起者</td></tr>
+          <tr><th>受监管专家用 AI 支持重大例外并签字</th><td>A/C/E 高，AI 辅助</td><td>岗位/责任溢价＋递延和扣回</td><td>因 AI 使用少而低估</td></tr>
+          <tr><th>团队吞吐上升但审查负荷、离职上升</th><td>C 可能高，E/净 L 下降</td><td>校正净值，奖金下调或递延</td><td>只按吞吐全额奖励经理</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>TVI 不是替代薪酬委员会的算法，而是把判断公开化、证据化。其价值在于拆分价值性质、选择匹配的付薪工具和揭示不确定性，而不是制造一个看似精确的个人排名。</p></div>
+    </section>
+
+    <!-- ============ 第十一章 ============ -->
+    <section id="ch11">
+      <h2 class="chap"><span class="cn">Chapter 11</span>CEO 与 CHO/CHRO 行动议程</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>CEO 负责选择价值链、风险边界和价值分配原则；CHO/CHRO 负责把任务、能力、职业路径、绩效、薪酬与员工信任连接。AI 战略与人才战略若由不同治理线运行，企业会在工具部署后才发现缺乏数据、责任、技能和激励，或以成本削减破坏未来能力供给。</p></div>
+
+      <h3>CEO 需要回答的七个问题</h3>
+      <ol>
+        <li><b>未来竞争优势依赖哪些任务和稀缺能力组合？</b> 不回答"需要更多 AI 人才"，而要指出价值链环节、责任和供给缺口。</li>
+        <li><b>哪些高价值任务应增强、哪些可端到端自动化、哪些必须保留人工承诺？</b> 用四象限和风险偏好而非职业标签。</li>
+        <li><b>AI 收益的主要来源是什么？</b> 增产、质量、风险、客户体验、新业务或成本，必须选择并冻结口径。</li>
+        <li><b>瓶颈会转移到哪里？</b> 审查、数据、权限、合规、客户、管理跨度或人才管道；预算必须随瓶颈移动。</li>
+        <li><b>哪些人才被现有职级系统性低估？</b> 高杠杆 IC、责任专家、跨域整合者、工作流设计者和变革推动者是否有职业与薪酬通道。</li>
+        <li><b>价值池如何分配？</b> 在客户价格、利润、工资、奖金、学习、再投资和人员减少之间作出原则性选择，并监测实际分配。</li>
+        <li><b>董事会愿意承担什么风险？</b> 模型错误、责任稀释、员工监控、机会不平等和学徒链断裂必须有上限与问责人。</li>
+      </ol>
+
+      <h3>CHO/CHRO 需要推动的十项变革</h3>
+      <ol>
+        <li>建立任务注册表，将岗位拆为任务、情境、责任和结果；</li>
+        <li>用 AI 替代性 × 组织价值四象限重构工作；</li>
+        <li>版本化五层能力模型并记录半衰期；</li>
+        <li>把招聘从证书与年限转向工作样本、校准和系统重构证据；</li>
+        <li>建立专家/管理双轨和高影响力 IC 通道；</li>
+        <li>重构学徒制，加入模拟、影子判断、异常与 AI 审计；</li>
+        <li>将绩效改为数量、质量、风险、团队、下游和长期结果；</li>
+        <li>试点 SCALE-R、TVI-Value 与证据闸门；</li>
+        <li>建立动态内部人才市场和关键能力密度仪表盘；</li>
+        <li>与法务、风险、数据和员工代表建立 AI 人才治理与申诉。</li>
+      </ol>
+      <div class="tw"><table>
+        <caption>图表31 CEO 与 CHO/CHRO 职责接口</caption>
+        <thead><tr><th>决策域</th><th>CEO/董事会</th><th>CHO/CHRO</th><th>共同交付</th></tr></thead>
+        <tbody>
+          <tr><th>价值链</th><td>选择战略任务与资本优先级</td><td>映射岗位/能力供给</td><td>战略能力投资组合</td></tr>
+          <tr><th>风险责任</th><td>设风险偏好与签字边界</td><td>写入岗位、绩效和薪酬</td><td>人机 RACI 与责任架构</td></tr>
+          <tr><th>组织设计</th><td>决定边界、管理跨度、新业务</td><td>双轨路径、人才市场、学徒制</td><td>人机协作组织蓝图</td></tr>
+          <tr><th>价值测量</th><td>定义 NAV 和停止/扩张规则</td><td>连接 U—T—P—W 与公平</td><td>价值与分配仪表盘</td></tr>
+          <tr><th>价值分配</th><td>决定利润/客户/员工原则</td><td>设计工资、奖金、津贴、LTI</td><td>可审计 TVI-Payable</td></tr>
+          <tr><th>信任治理</th><td>对董事会和外部负责</td><td>员工告知、参与、申诉</td><td>公平与风险审计</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>人才组合而非人才清单</h3>
+      <p>企业应将关键能力视为投资组合：基础 AI 素养需要广覆盖；领域专业与高责任判断需要深度与继任；工作流、评测和治理需要平台化团队；跨域整合和变革能力需要嵌入重点业务。每项能力定义目标密度、单点依赖、培养时间、外部获取、半衰期和退出条件。</p>
+      <p>组合治理能防止两种极端：把所有员工培训为浅层通才，导致专业和责任不足；或把 AI 能力集中在中央团队，导致业务所有权与采用断裂。推荐"平台＋业务嵌入"模式：中央平台提供模型、数据、评测、治理和可复用组件；业务单元拥有问题、流程、结果和人员发展。</p>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>AI 人才战略的产出不是培训人数，而是战略任务得到合格覆盖、风险责任清晰、关键能力可继任、工作流可复制、员工获得公平机会。</p></div>
+    </section>
+
+    <!-- ============ 第十二章 ============ -->
+    <section id="ch12">
+      <h2 class="chap"><span class="cn">Chapter 12</span>0—36 个月实施路线图、治理与情景</h2>
+      <div class="callout"><div class="lbl">本章结论</div><p>实施应遵循"诊断—受控试点—工作流重构—动态能力运营"的顺序。最先建立的不是复杂技能云，而是任务基线、数据边界、质量/风险口径和责任人。薪酬改革应晚于价值验证：先用可逆项目奖，后用期限化津贴，最后才调整基本工资和长期激励。</p></div>
+      <figure class="fig"><div class="ph">图表 32 · 三阶段路线图</div><figcaption><b>图表32 0—36 个月实施路线图。</b> 三阶段分别为诊断与识别、试点与重构、规模化与制度化；每阶段设价值、人才、数据、治理四条并行工作流和决策闸门。</figcaption></figure>
+
+      <h3>0—3 个月：诊断与识别</h3>
+      <div class="tw"><table>
+        <caption>图表33 分阶段行动表（A：0—3 个月）</caption>
+        <thead><tr><th>关键任务</th><th>责任人</th><th>交付成果</th><th>衡量指标</th><th>常见风险</th><th>决策检查点</th></tr></thead>
+        <tbody>
+          <tr><th>识别 AI 高暴露与高价值任务</th><td>业务 A，战略/数据 R</td><td>任务注册表、四象限</td><td>覆盖关键价值链、任务有所有者</td><td>用职业暴露代替任务</td><td>是否值得试验且责任可控</td></tr>
+          <tr><th>盘点战略稀缺能力</th><td>CHRO A，业务 R</td><td>SCALE-R 初评、能力密度</td><td>关键任务覆盖/单点依赖</td><td>把稀缺当高价值</td><td>是否通过价值闸门</td></tr>
+          <tr><th>确认关键岗位/人才/入口</th><td>CHRO/业务</td><td>继任、学徒链风险图</td><td>校招、导师、晋升准备</td><td>只看当前高绩效</td><td>未来供给是否可持续</td></tr>
+          <tr><th>评估机制与数据缺口</th><td>CHRO/CFO/CIO/风险</td><td>U—T—P—W 字典、治理边界</td><td>数据可连、员工可纠错</td><td>秘密监控、缺基线</td><td>是否具备试点证据条件</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>3—12 个月：试点与重构</h3>
+      <p>选择 1—2 个高频、结果可测、风险可控的任务簇，采用团队或网点分批上线、随机鼓励、员工内交叉任务或错位采用事件研究。试点必须同时记录速度、质量、复核、返工、客户/风险和下游结果；模型、流程和管理目标变化要进入时间表。项目验收先由业务和 CFO 确认 NAV，再由 CHRO 使用 SCALE-R 与 TVI-Value 讨论人才与付薪。</p>
+      <div class="tw"><table>
+        <caption>图表33（续） B：3—12 个月行动表</caption>
+        <thead><tr><th>关键任务</th><th>责任人</th><th>交付成果</th><th>衡量指标</th><th>常见风险</th><th>决策检查点</th></tr></thead>
+        <tbody>
+          <tr><th>重点流程重构</th><td>业务 A，产品/数据 R</td><td>前后流程、RACI、异常/抽检</td><td>端到端净结果</td><td>局部加速、瓶颈转移</td><td>M2→M3 价值是否仍为正</td></tr>
+          <tr><th>新能力模型/招聘试点</th><td>CHRO A</td><td>五层能力、工作样本</td><td>预测效度、候选质量、差异影响</td><td>软技能印象化</td><td>是否比旧信号更有效公平</td></tr>
+          <tr><th>AI 杠杆绩效试点</th><td>业务/CHRO/CFO</td><td>数量＋质量＋风险指标</td><td>L3 证据、团队归因</td><td>使用量 KPI、重复计价</td><td>只用项目奖还是可进入津贴</td></tr>
+          <tr><th>学徒制重构</th><td>CHRO/业务</td><td>模拟、影子判断、导师机制</td><td>异常案例、导师容量、晋升准备</td><td>基础练习被清空</td><td>专家后备是否改善</td></tr>
+          <tr><th>员工治理</th><td>CHRO/法务/风险</td><td>告知、查看、纠错、申诉</td><td>纠正率、信任、机会差异</td><td>监控感、影子 AI</td><td>是否可规模化且不伤公平</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>12—36 个月：规模化与制度化</h3>
+      <p>将验证过的任务、能力和项目数据连接到内部人才市场；对工作流组件和能力组合建立复用、维护与版本控制；将战略能力密度、单点依赖和人才管道纳入年度战略规划。M4 以上业务可对多周期稳定、外部稀缺且职责持续的能力调整岗位带宽或期限化技能津贴；企业级平台、新业务和长期风险责任可采用 LTI、递延和扣回。</p>
+      <div class="tw"><table>
+        <caption>图表33（续） C：12—36 个月行动表</caption>
+        <thead><tr><th>关键任务</th><th>责任人</th><th>交付成果</th><th>衡量指标</th><th>常见风险</th><th>决策检查点</th></tr></thead>
+        <tbody>
+          <tr><th>动态人才市场</th><td>CHRO/CIO</td><td>项目—能力—人才匹配</td><td>配置周期、覆盖、机会公平</td><td>标签通胀、隐私</td><td>M3→M4 证据与治理是否齐备</td></tr>
+          <tr><th>薪酬体系改革</th><td>薪委会/CFO/CHRO</td><td>岗位＋TVI 付薪架构</td><td>价值/支付、压缩、公平、留任</td><td>薪酬漂移、黑箱</td><td>哪些价值进入何种工具</td></tr>
+          <tr><th>企业能力数据平台</th><td>CIO/CHRO/数据治理</td><td>U—T—P—W、版本与审计</td><td>数据完整、最小化、可追溯</td><td>过度监控、错误归因</td><td>数据是否足够而不过度</td></tr>
+          <tr><th>战略能力投资组合</th><td>CEO/战略/CHRO</td><td>构建/购买/合作/退出方案</td><td>能力密度、复用、继任、期权</td><td>培训活动化</td><td>继续、扩张、停止或外购</td></tr>
+          <tr><th>董事会治理</th><td>董事会/风险</td><td>风险偏好、审计、价值分配</td><td>事故、申诉、人才管道、分配</td><td>责任稀释</td><td>是否具备 M5 必要条件</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>企业成熟度模型</h3>
+      <figure class="fig"><div class="ph">图表 34 · 成熟度阶梯 M1—M5</div><figcaption><b>图表34 企业 AI 能力与人才定价成熟度。</b> M1 工具接入、M2 任务增强、M3 工作流重构、M4 动态能力运营、M5 AI 原生组织。成熟度以业务单元评估，集团平均不应掩盖差异。</figcaption></figure>
+      <div class="tw"><table>
+        <thead><tr><th>等级</th><th>核心特征</th><th>价值机制</th><th>允许的薪酬动作</th><th>禁止/主要失败</th></tr></thead>
+        <tbody>
+          <tr><th>M1 工具接入</th><td>许可、政策、基础培训</td><td>个体便利与探索</td><td>培训、认证、非现金认可</td><td>按使用次数定薪；影子 AI</td></tr>
+          <tr><th>M2 任务增强</th><td>具体任务对照、人工复核</td><td>局部节时/质量/体验</td><td>小额试点奖、团队认可</td><td>把自报节时当 ROI</td></tr>
+          <tr><th>M3 工作流重构</th><td>基线、流程所有者、RACI、异常</td><td>净流程结果与复用</td><td>项目/团队奖、责任津贴</td><td>局部吞吐掩盖瓶颈</td></tr>
+          <tr><th>M4 动态能力运营</th><td>任务—技能—项目—人才连接</td><td>跨团队复用、能力密度</td><td>期限津贴、带宽、项目/LTI</td><td>标签通胀、机会不平等</td></tr>
+          <tr><th>M5 AI 原生组织</th><td>业务模型、决策权、人机网络重构</td><td>新业务、平台与战略期权</td><td>企业 LTI、动态角色、强审计</td><td>责任稀释、系统风险、培养链断裂</td></tr>
+        </tbody>
+      </table></div>
+      <p>成熟度决定"定价权限"。M1 企业有高活跃率也不能把它转为工资；M3 企业证明流程增益后通常先用团队/项目激励；只有 M4 以上具备跨周期证据、公平审计和申诉，才适合把稳定能力写入岗位带宽。</p>
+
+      <h3>未来 3—5 年三种情景</h3>
+      <div class="tw"><table>
+        <caption>技能溢价重估情景（2026—2031）</caption>
+        <thead><tr><th>情景</th><th>关键假设</th><th>技能与岗位</th><th>薪酬机制</th><th>企业优先动作</th><th>预警指标</th></tr></thead>
+        <tbody>
+          <tr><th>基准情景</th><td>模型持续进步，企业互补资产渐进建设，责任制度缓慢调整</td><td>基础 AI 门槛化；任务重构快于岗位；责任/系统能力升值</td><td>岗位底座＋项目/期限溢价逐步扩张</td><td>M3 工作流、学徒制、TVI 试点</td><td>采用高、净值分化；初级招聘偏弱</td></tr>
+          <tr><th>乐观情景</th><td>智能体可靠、需求扩张、企业将节时转为创新和学习</td><td>新任务增长抵消位移；中低基线者广泛提升</td><td>增益分享、团队奖和长期能力投资</td><td>快速平台化、扩大职业入口</td><td>质量稳定、客户需求增、工资/晋升传导</td></tr>
+          <tr><th>谨慎情景</th><td>可靠性/治理成本高、需求有限、资本获得多数租金</td><td>初级和中等标准知识岗位承压；审查/工作强度上升</td><td>工资传导弱、使用 KPI 和成本压力增加</td><td>风险上限、员工声音、社会/职业缓冲</td><td>工时延长、工资不动、离职/不信任、事故</td></tr>
+        </tbody>
+      </table></div>
+      <p><b>确定性较高的趋势</b> 包括：任务级变化、通用工具能力门槛化、验证/异常/责任权重提高、互补组织资本重要、外部工资差不能直接定薪。<b>合理但未证实的假设</b> 包括：能力差距先缩后扩、赢家通吃显著加剧、复合型人才普遍高于深度专家、岗位工资体系在三年内大规模转为技能付薪、中国能力密度成为主要绩效解释变量。</p>
+
+      <h3>风险与治理框架</h3>
+      <div class="tw"><table>
+        <caption>图表35 AI 人才定价风险控制</caption>
+        <thead><tr><th>风险</th><th>触发机制</th><th>领先指标</th><th>控制措施</th><th>责任人</th></tr></thead>
+        <tbody>
+          <tr><th>伪生产率</th><td>只测数量/节时</td><td>返工、审查、下游等待上升</td><td>NAV、30/90 天质量、停止标准</td><td>业务/CFO</td></tr>
+          <tr><th>责任空洞</th><td>AI 生成但无人签字</td><td>事故、升级不清、橡皮图章</td><td>RACI、签字权、抽检、扣回</td><td>风险/业务</td></tr>
+          <tr><th>薪酬不公</th><td>机会/数据/评分差异</td><td>群体奖金差、申诉、压缩</td><td>机会审计、多评委、员工查看</td><td>CHRO/薪委会</td></tr>
+          <tr><th>KPI 游戏化</th><td>按使用量或产出</td><td>对话量激增、有效任务不变</td><td>禁止裸使用 KPI、质量门槛</td><td>CHRO/业务</td></tr>
+          <tr><th>学徒链断裂</th><td>删除基础任务</td><td>校招下降、导师不足、准备度弱</td><td>模拟、影子判断、导师指标</td><td>CHRO/业务</td></tr>
+          <tr><th>监控与信任</th><td>收集过度员工数据</td><td>影子 AI、连接感下降、离职</td><td>数据最小化、目的限制、参与申诉</td><td>CHRO/法务</td></tr>
+          <tr><th>技能津贴固化</th><td>技能商品化但工资不回调</td><td>外部供给增、替代期短、津贴累积</td><td>到期复评、半衰期、带宽治理</td><td>薪委会</td></tr>
+          <tr><th>系统性模型风险</th><td>多流程依赖同一模型</td><td>同源错误、供应中断</td><td>模型组合、连续评测、应急人工能力</td><td>CIO/风险</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout hot"><div class="lbl">对企业意味着什么</div><p>未来三年最优策略不是押注唯一预测，而是建设可观察、可停止、可复评的能力系统。框架和薪酬必须随模型、供给、流程和责任变化更新。</p></div>
+    </section>
+
+    <!-- ============ 结论 ============ -->
+    <section id="conclusion">
+      <h2 class="chap"><span class="cn">Conclusion</span>技能定价的对象从"拥有技能"转向"在情境中稳定创造结果"</h2>
+      <p class="lead">本报告对中心命题的最终判断是：<em class="hot">方向成立，但不能被简化为"知识贬值、软技能升值"。</em> AI 扩大了标准化答案和执行的供给，也扩大了顶尖人才的问题范围；专业知识从信息优势转为校准与责任基础；通用 AI 使用从阶段性差异转为门槛；真正稀缺的是领域、判断、责任、系统与组织影响形成的可验证组合。</p>
+      <p>技能溢价的重估有三个决定性原则。<b>第一，分析任务而不是职业标签</b>；<b>第二，计算风险调整净价值而不是活动与毛节时</b>；<b>第三，区分价值创造与价值分配</b>。企业只有在岗位、任务、能力、结果、责任和薪酬之间建立可追溯连接，才可能把 AI 从工具普及转化为组织竞争力。</p>
+      <p>对 CEO 而言，最终问题不是"AI 能替代多少人"，而是"哪种能力组合让公司在 AI 普及后仍能做出更好的选择、承担更大的责任并复制更高质量的结果"。对 CHO/CHRO 而言，最终任务不是给 AI 贴一个工资标签，而是建立一个持续识别、培养、配置、验证和公平定价稀缺能力的管理系统。</p>
+    </section>
+
+    <!-- ============ 附录 A ============ -->
+    <section id="appA">
+      <h2 class="chap"><span class="cn">Appendix A</span>C1—C12 逐结论证据矩阵</h2>
+      <p>本附录保留支持证据、反方证据、案例链、适用条件、证伪条件、未解决问题和置信度，避免正文结论脱离证据边界。</p>
+
+      <h3>A.1 总览：12 项命题的处理结果</h3>
+      <div class="tw"><table>
+        <thead><tr><th>编号</th><th>待验证结论</th><th>本轮处理</th><th>置信度</th><th>变化原因</th></tr></thead>
+        <tbody>
+          <tr><th>C1</th><td>AI 重分配技能溢价的速度快于消除岗位的速度</td><td>维持</td><td>高</td><td>暴露、任务实验和劳动结果均支持"任务先变、岗位后调"，但不同市场速度差异大</td></tr>
+          <tr><th>C2</th><td>被压缩的是可标准化答案和执行，不是所有知识与专家</td><td>维持并收窄</td><td>高</td><td>实验与代码遥测支持；复杂代码库反例要求加入情境、验证和工具版本</td></tr>
+          <tr><th>C3</th><td>AI 基础使用能力将成为门槛，长期溢价转向工作系统重构</td><td>维持</td><td>中高</td><td>采用快速扩散，但工资溢价是否收敛尚无足够时间序列</td></tr>
+          <tr><th>C4</th><td>最昂贵的是选择问题、校准答案并承担后果</td><td>收窄</td><td>中高</td><td>支持"组合能力"，不支持脱离专业知识和责任的抽象判断力定价</td></tr>
+          <tr><th>C5</th><td>AI 对能力差距先压缩、后可能重新扩大</td><td>降级为阶段性假设</td><td>中</td><td>客服/写作显示压缩，专家智能体使用显示杠杆差异；缺同一人群纵向验证</td></tr>
+          <tr><th>C6</th><td>高暴露、高价值任务把人推向验证、异常和责任位置</td><td>维持</td><td>高</td><td>多行业机制一致；终端可靠性与法律责任仍是边界</td></tr>
+          <tr><th>C7</th><td>初级岗位与传统学徒链是未来三年重大组织风险</td><td>维持但不写成普遍事实</td><td>中</td><td>招聘与年轻就业有负向信号，丹麦和总体失业结果提供反证</td></tr>
+          <tr><th>C8</th><td>流程、数据、权责和治理是生产率的关键互补资产</td><td>维持</td><td>高</td><td>跨实验、企业案例与反例一致；但互补资产各自贡献难拆</td></tr>
+          <tr><th>C9</th><td>观察到的 AI 技能工资差异不等于个人因果溢价</td><td>维持</td><td>高</td><td>职位广告差异与丹麦面板零结果形成直接识别对照</td></tr>
+          <tr><th>C10</th><td>信任、影响力、共情仅在高承诺/高风险/多方协同中持续升值</td><td>由高降为中</td><td>中</td><td>机制合理并有案例支持，但直接工资证据和可测量性不足</td></tr>
+          <tr><th>C11</th><td>岗位体系不会消失，将演化为岗位底座+动态溢价</td><td>收窄</td><td>中高</td><td>岗位持续性证据强；具体混合定价的公开实施证据弱</td></tr>
+          <tr><th>C12</th><td>中国优势将从人才数量转向判断、整合和 AI 系统能力密度</td><td>保留为战略假设</td><td>中</td><td>宏观供给与政策证据充分，微观技能—绩效—薪酬链不足</td></tr>
+        </tbody>
+      </table></div>
+
+      <h4>A.2 C1：AI 重分配技能溢价的速度快于其消除岗位的速度</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>ILO 任务指数显示暴露广但整岗最高暴露比例有限，并明确认为转型比替代更可能（E06）；客服、写作、顾问、邮件和编程研究已观察到任务方式变化（E25—E32），而丹麦工资工时平均效应接近零（E29），Anthropic 也未发现高暴露职业总体失业显著上升（E21）。</td></tr>
+        <tr><th>反方证据</th><td>世界银行职位广告研究显示高替代潜力职业招聘下降，入门和低经验岗位更弱（E13）；Stanford 高频工资记录显示年轻高暴露劳动者相对就业下降（E37）。这说明"岗位后调"不等于"岗位不调"。</td></tr>
+        <tr><th>案例链</th><td>Klarna 首先改变客服对话分配，随后重新强调人工升级与同理心（K04）；Morgan Stanley 把顾问任务推向检索后的校准和客户责任（K01）；Walmart 先改变门店主管的计划与翻译任务（K09）。</td></tr>
+        <tr><th>适用条件</th><td>AI 能处理任务，但整岗还含异常、关系、实体操作、责任或多系统交接；企业处于增强或局部自动化阶段。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>端到端系统达到高可靠，责任可转移，需求未因降本扩大，且企业真正取消整组任务；若跨国行政数据持续显示高暴露职业净就业和工资同步下降，应下调结论。</td></tr>
+        <tr><th>未解决问题</th><td>工时节省最终成为更多产出、人员减少、工作强度下降还是利润；3—5 年均衡效应；不同劳动制度下的分配差异。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>高置信度，维持。</b> CEO 不应以职业暴露率直接设裁员目标；应先做任务组合、需求弹性与责任链审计。CHRO 需同时监测任务迁移和岗位入口，而非只看净编制。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.3 C2：被压缩的是可标准化答案和执行，不是所有知识与专家</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>短篇写作和咨询边界内任务显著提速提质（E26、E27）；客服中新手收益更大（E25）；Claude Code 日志显示专家提供更长背景、委托更大范围并更能恢复错误（E22）。历史任务研究也表明技术重估的是剩余任务所需专业性（E01、E04）。</td></tr>
+        <tr><th>反方证据</th><td>METR 的资深开发者实验在熟悉大型代码库任务中发现当时 AI 使完成时间变慢（E35）；Jagged Frontier 的边界外任务中 AI 降低正确率（E27）。反证不是"AI 无用"，而是标准化程度、隐性上下文和验证成本决定净收益。</td></tr>
+        <tr><th>案例链</th><td>Morgan Stanley 将 10 万份受控知识接入工具，但保留顾问复核（K01）；L'Oréal 用多模型生成创意素材，同时以品牌、IP 与真人表达规则约束（K10）；医疗记录工具缓解耗竭但未证明临床判断自动化（K08）。</td></tr>
+        <tr><th>适用条件</th><td>任务目标清晰、反馈快、评价标准可编码、所需上下文可获得；专业人员能验证并承担错误成本。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>隐性需求多、代码/组织历史深、质量难即时评估、错误成本高，或模型无法访问关键数据；若 AI 能稳定端到端处理此类任务且责任制度同步改变，专业溢价边界会继续收缩。</td></tr>
+        <tr><th>未解决问题</th><td>何种深度的专业知识从"执行"转为"验证"；专业训练是否因低阶任务减少而受损；模型能力进步速度。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>高置信度，维持并收窄。</b> 企业不应取消专业能力模型，而应把"记忆与产出"权重转向"问题结构化、验证、例外处理和责任"。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.4 C3：AI 基础使用能力将成为门槛，长期溢价转向工作系统重构</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>美国工作使用率扩散迅速（E16）；平台日志显示任务分布拓宽和用户学习（E20、E24）；BBVA、Moderna、Walmart 均显示许可、GPT 或日常使用快速规模化（E56—E58、E61）。OECD 同时指出深度采用受技能、数据和组织条件限制（E11、E45）。</td></tr>
+        <tr><th>反方证据</th><td>PwC、Lightcast 职位广告仍显示 AI 技能工资差异（E38—E40），说明在部分地区和阶段 AI 能力尚未完全成为门槛；丹麦研究则未发现采用带来工资工时效应（E29）。两者共同说明溢价具有阶段性且受选择效应影响。</td></tr>
+        <tr><th>案例链</th><td>BBVA 由 3,000 扩至 11,000 许可，单纯使用趋向普及；真正有差异的案例集中在法务流程和内部 GPT 商店治理（K03）。Moderna 的 GPT 数量证明参与，但剂量选择案例才体现业务重构（K02）。</td></tr>
+        <tr><th>适用条件</th><td>通用工具易获得、培训成本下降、接口标准化；企业同时建立安全环境与基本数据权限。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>受监管行业、低数字化企业或某些地区的工具访问仍稀缺；若同岗同企业面板显示基础使用能力长期保持独立工资回报，则"门槛化"速度需下调。</td></tr>
+        <tr><th>未解决问题</th><td>溢价收敛需要 2 年还是 5 年以上；应测"使用频次"还是"工作流自主设计"；不同工具认证是否会形成新信号。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>中高置信度，维持。</b> AI 素养应进入全员基础标准，不宜长期发放"会用工具"津贴；更高溢价应给能改造流程、连接数据、设计验证与形成可复制产出的人。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.5 C4：未来最昂贵的是选择问题、校准答案并承担后果</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>Claude Code 专家更多规划、给出上下文、扩展委托并恢复错误（E22）；Jagged Frontier 说明识别能力边界本身影响正确率（E27）；历史"剩余任务"研究表明保留任务的专业性决定价值（E04）。P&amp;G 实验显示 AI 可以跨越职能信息，但目标与结果判断仍由人设定（E32）。</td></tr>
+        <tr><th>反方证据</th><td>现有研究多测任务绩效，不直接测"问题选择"对工资、利润或职业回报的贡献；抽象的判断力可能只是职位权力、资历或领域知识的代理。某些问题定义本身也可能被智能体部分自动化。</td></tr>
+        <tr><th>案例链</th><td>Morgan Stanley 顾问需要把 AI 检索转化为合规客户建议（K01）；Moderna 的剂量选择需要临床/研发专家决定问题、证据和风险（K02）；L'Oréal 需要品牌审美、IP 和表达边界（K10）。</td></tr>
+        <tr><th>适用条件</th><td>问题价值差异大、信息不完整、决策不可逆、错误有外部性，且个人拥有决策权或明确结果责任。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>低风险、目标固定、反馈即时的任务；若所谓"判断"无行为证据、无结果权或不承担后果，则不构成可定价能力。</td></tr>
+        <tr><th>未解决问题</th><td>如何把问题选择与岗位权力分开测量；如何评价被放弃的机会、风险避免和隐性贡献；是否存在跨行业可迁移指标。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>中高置信度，收窄为能力组合。</b> 不为"判断力"标签付费；只为可观察的"领域证据+备选方案+校准记录+决策权+事后结果"付费。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.6 C5：AI 对能力差距先压缩、后可能重新扩大</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>客服新手收益显著高于资深者（E25），短篇写作与咨询实验也显示较低基线者改善更明显（E26、E27），支持短期执行差距压缩。Claude Code 中专家能委托更大任务、给出更多上下文并恢复错误（E22），支持智能体阶段的杠杆差异。</td></tr>
+        <tr><th>反方证据</th><td>"压缩"和"扩大"来自不同研究、任务、工具和人群，尚非同一队列的纵向过程；较低绩效者也可能因验证能力不足而受到更大错误损失。METR 更新显示时间效应与样本选择可改变结论（E35、E36）。</td></tr>
+        <tr><th>案例链</th><td>BBVA 的大规模许可可能压缩通用知识生产差距，但法务工作流重构仍依赖少数专家（K03）；Anthropic 内部高采用团队显示个人工作范围扩大，同时出现技能萎缩担忧（K12）。</td></tr>
+        <tr><th>适用条件</th><td>第一阶段为建议式助手、任务有标准答案；第二阶段为长链智能体、用户能定义目标、管理上下文、验证多个步骤并控制工具。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>工具把复杂编排完全产品化，或企业将流程与数据封装到统一系统，使个人差异再次缩小；纵向数据若不出现输出集中度增加，则应否定后半段。</td></tr>
+        <tr><th>未解决问题</th><td>总产出、任务价值和工资分布是否同步扩大；团队流程能否把高手方法扩散；职业早期学习如何改变。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>中等置信度，降级为阶段性假设。</b> 人才盘点应同时测"AI 后同类任务效率"和"能否承担更大问题范围"，不要只测工具熟练度。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.7 C6：高暴露、高价值任务把人推向验证、异常和责任位置</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>ILO 认为任务转型更可能（E06）；Jagged Frontier 显示边界外错误风险（E27）；Claude Code 专家恢复错误和人类规划角色明显（E22）；临床记录研究只改变文档负担而未替代临床责任（E33、E34）。</td></tr>
+        <tr><th>反方证据</th><td>在低风险、标准化、大规模场景，Klarna 等案例显示 AI 可直接处理多数常规对话（E59）；随着可靠性和治理发展，人类复核比例可能下降。</td></tr>
+        <tr><th>案例链</th><td>Morgan Stanley 保留顾问复核和客户责任（K01）；Klarna 把复杂问题升级给人工（K04）；L'Oréal 设置品牌/IP/真人表达边界（K10）；Walmart 将流程指南转为步骤建议，门店人员仍执行实体与客户任务（K09）。</td></tr>
+        <tr><th>适用条件</th><td>错误代价高、法规要求签字、客户承诺不可逆、异常长尾明显，或模型输出不可完全观察。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>端到端自动化经长期验证达到组织风险阈值，责任能够由机构/系统承担，且人工复核边际收益低于成本。</td></tr>
+        <tr><th>未解决问题</th><td>复核是否形成新的认知过载和"橡皮图章"；验证时间是否抵消生成时间；责任增加是否真正进入薪酬。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>高置信度，维持。</b> 高暴露岗位重构应把异常升级权、最终签字权、抽检率和事故责任写进岗位与薪酬，而不是只删除生成任务。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.8 C7：初级岗位和传统学徒链是未来三年最需要管理的组织风险之一</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>世界银行职位广告研究显示高替代潜力职业、无需经验和入门岗位的招聘需求相对更弱（E13）；Stanford 显示高暴露职业 22—25 岁就业相对下降（E37）；Anthropic 发现该年龄段进入最暴露职业的相对招聘也有下降信号（E21）。Anthropic 内部访谈直接提出导师制和技能萎缩担忧（E23）。</td></tr>
+        <tr><th>反方证据</th><td>丹麦研究两年内未发现工资和工时平均效应（E29）；Anthropic 未发现暴露职业总体失业显著上升（E21）；职位广告变化可能包含利率、科技周期和疫情后调整。</td></tr>
+        <tr><th>案例链</th><td>客服助手使新手快速接近最佳实践（K05 对应 E25），既能加速学习，也可能减少基础练习；Anthropic 内部更多任务委派给 AI，员工担心失去学习与导师互动（K12）；Klarna 常规客服自动化提出入口岗位数量和复杂升级能力之间的张力（K04）。</td></tr>
+        <tr><th>适用条件</th><td>职业依赖大量可标准化初级任务积累情境；企业以成本为主要采用目标；没有替代性的模拟、轮岗、影子学习和异常案例训练。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>AI 使初级人员更早承担高质量任务且招聘数量不减；企业把节省工时显式投入训练；纵向晋升和专家后备率改善。</td></tr>
+        <tr><th>未解决问题</th><td>净减少的是岗位、职位广告还是任务工时；新型入门岗位是否出现；不同学历和社会背景的机会差异。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>中等置信度，维持但不写成普遍事实。</b> CHRO 应把校招量、入门任务时数、导师接触、异常案例覆盖和晋升准备度设为 AI 转型护栏。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.9 C8：工具普及不会自动形成生产率，流程、数据、权责与治理才是互补资产</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>66 家企业随机实验发现电子邮件时间下降却未发现任务数量/构成显著变化（E28）；丹麦采用存在但工资工时结果有限（E29）；GitHub 实验受低依从和组织环境显著影响（E30）；P&amp;G 团队实验显示任务设计和跨职能结构改变结果（E32）；OECD 和 World Bank 强调技能、数据与组织基础（E11、E17、E45）。</td></tr>
+        <tr><th>反方证据</th><td>写作、客服和咨询边界内任务在较少流程改造下也能出现短期收益（E25—E27）；说明简单任务可先得红利，但不证明企业级持续收益。</td></tr>
+        <tr><th>案例链</th><td>Morgan Stanley 的受控 10 万份语料和人工复核（K01）；BBVA 的内部 GPT 商店和法务流程（K03）；L'Oréal 的模型整合、IP 和品牌规则（K10）；Walmart 把工具嵌入排班、翻译、流程指南与专有平台（K09）。</td></tr>
+        <tr><th>适用条件</th><td>AI 进入跨步骤、跨系统、受监管或面向客户流程；结果依赖专有数据和权限；错误需升级。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>单一、低风险、可独立完成的个人任务；若同样工具覆盖下的企业差异不能由流程/数据/治理解释，则需调整。</td></tr>
+        <tr><th>未解决问题</th><td>互补资产各自边际贡献；建设成本与回收期；治理过重是否抑制采用；规模化后的维护成本。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>高置信度，维持。</b> AI 投资组合不能按许可证和活跃率排序，应按"流程重构度 × 结果价值 × 风险控制 × 可复制性"排序。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.10 C9：观察到的 AI 技能工资差异不等于个人技能的因果溢价</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>PwC 和 Lightcast 的大样本职位广告均显示 AI 技能岗位工资差异（E38—E40），但口径混合职业、企业、地区与资历。丹麦连接行政数据并控制采用选择后，两年内工资影响接近零（E29），直接证明横截面差异可能高估个人回报。</td></tr>
+        <tr><th>反方证据</th><td>持续的职位广告工资差异可能仍包含真实稀缺性，尤其在 AI 工程、产品化和受监管领域；现有面板窗口可能过短、平均效应掩盖顶尖人群。</td></tr>
+        <tr><th>案例链</th><td>企业案例普遍披露采用而不披露个人薪酬（K01—K12）；辽宁政策提出协议/项目工资（E51），只能证明制度工具可用，不能证明已支付或有效。</td></tr>
+        <tr><th>适用条件</th><td>分析职位广告、简历标签、证书或"使用 AI"与工资的横截面关系；采用者与高绩效企业明显自选择。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>随机培训、分阶段采用、个人固定效应或同岗同企业设计显示稳定工资增量，并能排除晋升和换岗。</td></tr>
+        <tr><th>未解决问题</th><td>工资回报是否以奖金、晋升、稳定性或股权而非基本工资体现；顶尖 AI 系统能力的回报分布；中国同岗微观数据。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>高置信度，维持。</b> 薪酬委员会不能用外部"AI 岗位溢价"直接乘到员工工资；必须分解岗位、能力稀缺、结果、责任和议价因素。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.11 C10：信任、影响力和共情只在高承诺、高风险、多方协同情境中持续升值</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>历史数据支持社会技能与认知技能组合的价值，而非社会技能单独普遍升值（E02）；医疗记录实验改善人际疏离，表明把时间还给关系可能有价值（E33）；Klarna 回摆材料强调复杂服务和同理心中的人工角色（E60）；P&amp;G 实验显示 AI 可跨越部分职能信息边界，意味着常规协调也可被自动化（E32）。</td></tr>
+        <tr><th>反方证据</th><td>直接把信任/共情与工资、利润或客户留存相连的 AI 时代因果研究很少；交易型沟通、语言翻译、常规跟进和标准谈判准备已可自动化（E61 等）。"软技能"易受管理者偏见影响。</td></tr>
+        <tr><th>案例链</th><td>财富管理顾问的长期客户承诺（K01）；Klarna 复杂问题升级（K04）；医疗中的临床关系（K08）；Walmart 44 种语言翻译说明部分沟通本身可商品化（K09）。</td></tr>
+        <tr><th>适用条件</th><td>决策不可逆、客户关系长期、信息敏感、多方利益冲突、需要真实承诺或法律/道德责任。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>一次性、低风险、脚本化互动；能力只有自评和印象评分，无法预测客户、变革或风险结果。</td></tr>
+        <tr><th>未解决问题</th><td>信任作为个人能力、品牌资产还是制度结果如何分解；跨文化测量；AI 代理能否建立足够的功能性信任。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>中等置信度，由高降级。</b> 不把"沟通、共情"作为统一加薪理由；按关系风险、承诺期限、协同复杂度和可验证结果定价，并采用行为样本与多评委校准。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.12 C11：岗位体系不会消失，企业更可能采用岗位底座"+动态溢价"</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>劳动经济学和 ILO 均显示岗位是任务组合而非单一技能（E01、E06）；OECD 技能优先研究明确提示技能信息的过时、偏差和劳动者保护问题（E09、E10）；工资、公平、合规、预算和职业路径仍需稳定架构。中国政策也在岗位制度之外探索技能、协议和项目工资（E50、E51）。</td></tr>
+        <tr><th>反方证据</th><td>公开企业案例几乎没有披露"岗位底座+动态溢价"的完整公式、权重、支付结果或公平审计；技能市场、项目制和平台工作可能在局部削弱岗位边界。</td></tr>
+        <tr><th>案例链</th><td>12 个案例都改变了任务或工具，未能证实岗位等级被取消；Walmart 同时投资工资、培训和 AI 工具，但没有把三者建立因果或定价链接（K09）。</td></tr>
+        <tr><th>适用条件</th><td>中大型组织、受监管行业、内部公平要求高、存在长期职业路径和团队协作。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>项目型、自由职业或极小型企业可更大比例按结果交易；若大量企业公开取消岗位架构且公平/合规结果更优，则需修正。</td></tr>
+        <tr><th>未解决问题</th><td>动态溢价应占总现金的多少；何种能力适合津贴、奖金或长期激励；如何避免频繁重定价破坏信任。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>中高置信度，但"混合架构"是规范性方案而非已普及事实。</b> 建议保留岗位带宽，用稀缺能力、AI 杠杆、结果、组织影响和风险责任构成可审计的附加项。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.13 C12：中国企业的下一轮优势不在人才数量本身，而在能力密度</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>支持证据</th><td>2025 届高校毕业生预计 1,222 万人（E48），说明学历和人才供给继续扩张；城镇工资存在显著行业、人员类别和所有制口径差异（E47），证明数量不能直接转化为同质价值。政策开始强调 AI 技能等级、知识/技能价值、协议和项目工资（E50、E51）；数字基础、数据、技能与组织能力共同决定 AI 收益（E11、E17、E52）。</td></tr>
+        <tr><th>反方证据</th><td>人才规模、完整产业链、快速工程化和执行速度本身仍是重要互补优势；目前缺少中国企业层面的 AI 使用—任务—绩效—工资连接数据，不能证明"能力密度"已经成为主要竞争变量。</td></tr>
+        <tr><th>案例链</th><td>平安传统 AI 大规模场景提供"数量+流程化"的历史基线（K11）；中国生成式 AI 核心案例的公开微观指标不足，因此不把单一厂商宣传作为全国证据。</td></tr>
+        <tr><th>适用条件</th><td>AI 工具和基础模型逐渐商品化，企业竞争转向专有场景、数据、流程、判断与治理；高学历供给继续增长但高价值工作系统不足。</td></tr>
+        <tr><th>不适用/证伪条件</th><td>若企业绩效主要由算力、资本和规模而非组织能力解释；或区域/企业数据证明人才数量仍能稳定转换为更高人均价值。</td></tr>
+        <tr><th>未解决问题</th><td>国企、民企和跨国公司定薪约束；城市与行业 AI 岗位工资；工程师角色重构；初级人才培养；工资总额与内部公平限制。</td></tr>
+        <tr><th>最终判断与管理含义</th><td><b>中等置信度，保留为战略假设。</b> 中国章节应把"能力密度"定义为单位关键岗位中可稳定完成高价值、跨域、受责任约束的人机协同能力，而非用学历、证书或 AI 培训人数代理。</td></tr>
+      </tbody></table></div>
+
+      <h4>A.14 结论证据依赖关系</h4>
+      <p>下表避免"一个热门数字支撑多个强结论"的伪三角验证。每项结论至少需要来自不同证据层的独立来源。</p>
+      <div class="tw"><table>
+        <thead><tr><th>结论</th><th>主要直接证据</th><th>主要反方/边界</th><th>仍缺的决定性证据</th></tr></thead>
+        <tbody>
+          <tr><th>C1</th><td>E06、E25—E29</td><td>E13、E37</td><td>跨国行政岗位净变化与任务面板</td></tr>
+          <tr><th>C2</th><td>E22、E25—E27、E04</td><td>E27 边界外、E35—E36</td><td>同一职业长期任务—质量—工资分解</td></tr>
+          <tr><th>C3</th><td>E16、E20、E45、E57—E58</td><td>E29、E38—E40</td><td>同岗 AI 基础技能工资差异的长期收敛</td></tr>
+          <tr><th>C4</th><td>E22、E27、E32、E04</td><td>直接工资证据缺失</td><td>问题定义/校准测评对业务结果的预测效度</td></tr>
+          <tr><th>C5</th><td>E25—E27、E22</td><td>E35—E36</td><td>同一人群跨 AI 阶段的纵向分布变化</td></tr>
+          <tr><th>C6</th><td>E06、E22、E27、E33</td><td>E59 低风险自动化</td><td>人工复核率、事故与责任薪酬的企业面板</td></tr>
+          <tr><th>C7</th><td>E13、E21、E37</td><td>E29、E46</td><td>校招—任务—导师—晋升纵向链条</td></tr>
+          <tr><th>C8</th><td>E28—E32、E11、E17</td><td>简单任务即时收益</td><td>同工具覆盖下的跨企业互补资产准实验</td></tr>
+          <tr><th>C9</th><td>E29 vs E38—E40</td><td>顶尖人才异质性</td><td>同岗同企业个人面板/随机培训工资结果</td></tr>
+          <tr><th>C10</th><td>E02、E32—E33、E60</td><td>常规沟通自动化</td><td>情境化信任/影响力与商业结果的因果验证</td></tr>
+          <tr><th>C11</th><td>E01、E06、E09—E10、E50—E51</td><td>实施公开证据少</td><td>企业定薪公式、支付结果、公平和留任追踪</td></tr>
+          <tr><th>C12</th><td>E46—E53、E17</td><td>微观证据不足</td><td>中国企业任务—能力—绩效—薪酬联结数据</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ============ 附录 B ============ -->
+    <section id="appB">
+      <h2 class="chap"><span class="cn">Appendix B</span>企业案例核验卡（K01—K12）</h2>
+      <p>案例卡区分可核验事实、公司/供应商口径、未披露机制与可迁移边界。K13—K16 已在第七章作为薪酬政策边界案例呈现。</p>
+
+      <h4>K01 Morgan Stanley 财富管理：知识检索商品化，合规判断与客户责任保留</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>金融财富管理；美国；2023—2024 披露</td></tr>
+        <tr><th>主要来源与等级</th><td>OpenAI 客户案例 E55，C2；缺独立评估</td></tr>
+        <tr><th>已核验事实</th><td>企业声称：超过 98% 的顾问团队使用；对内部知识的可访问覆盖由约 20% 提升至 80%；受控语料约 10 万份文档；输出需由人员复核。</td></tr>
+        <tr><th>被改变的任务</th><td>内部研究检索、文档摘要、准备客户沟通材料；不是最终投资建议与客户承诺的完全自动化。</td></tr>
+        <tr><th>相对降值的技能</th><td>记忆文档位置、通用搜索、初步摘要、标准回答拼装。</td></tr>
+        <tr><th>相对升值的能力</th><td>客户情境理解、适当性与合规判断、证据校准、解释与信任、最终建议责任。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露。没有证据证明顾问岗位减少、研究岗位重构或管理跨度改变。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。无公开 AI 技能招聘门槛、绩效指标权重或薪酬机制变化。</td></tr>
+        <tr><th>业务结果</th><td>采用和知识可访问范围有企业数据；客户资产、收入、错误率、投诉、合规事故和净生产率未公开。</td></tr>
+        <tr><th>替代解释</th><td>强制/集中部署、知识库治理和培训可能共同驱动采用；顾问团队本身为高绩效选择样本。</td></tr>
+        <tr><th>可外推范围</th><td>适用于受监管、知识密集且有受控语料的顾问型业务；不证明所有金融岗位都转向高判断。</td></tr>
+        <tr><th>案例判断</th><td><b>中等可信的机制案例。</b> 支持 C2/C6/C8；不支撑裁员、工资或 ROI 结论。</td></tr>
+      </tbody></table></div>
+
+      <h4>K02 Moderna：GPT 规模不是价值，业务问题所有权才是分界线</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>生物医药；美国/全球；2024 披露</td></tr>
+        <tr><th>主要来源与等级</th><td>OpenAI 客户案例 E56，C2</td></tr>
+        <tr><th>已核验事实</th><td>企业声称：mChat 采用率约 80%；两个月内创建约 750 个 GPT；活跃用户中约 40% 创建 GPT；平均每名用户每周约 120 次对话。</td></tr>
+        <tr><th>被改变的任务</th><td>企业知识问答、文档与分析辅助、专用助手开发；案例包括临床/研发中的剂量选择支持。</td></tr>
+        <tr><th>相对降值的技能</th><td>通用提示、基础文档生产、重复检索与格式化。</td></tr>
+        <tr><th>相对升值的能力</th><td>临床与研发领域知识、问题结构化、模型与数据边界判断、证据验证、受监管决策责任、内部产品化。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露。GPT 创建者数量不等于新岗位或能力成熟度。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。无证据显示"会创建 GPT"得到长期津贴或改变职级。</td></tr>
+        <tr><th>业务结果</th><td>采用、构建数量和使用频次可描述；上市周期、研发成功率、风险和财务结果未给出对照。</td></tr>
+        <tr><th>替代解释</th><td>组织文化、管理推动、供应商支持和研发数字基础可能解释高采用。</td></tr>
+        <tr><th>可外推范围</th><td>适用于高度受监管、科学知识密集企业；不适合把 GPT 数量作为跨企业能力指数。</td></tr>
+        <tr><th>案例判断</th><td><b>中低至中等可信的采用案例。</b> 支持 C3/C4/C8 的机制，不证明生产率或薪酬溢价。</td></tr>
+      </tbody></table></div>
+
+      <h4>K03 BBVA：从许可扩张到内部工作流，验证"采用不等于重构"</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>银行；西班牙/全球；2024—2025</td></tr>
+        <tr><th>主要来源与等级</th><td>BBVA 官方初始与扩展披露 E57、E58，C1</td></tr>
+        <tr><th>已核验事实</th><td>首批约 3,300 许可；早期披露称五个月约 83% 每周使用，约 3,000 个员工 GPT、约 700 个进入内部商店。2025 年扩至 11,000 许可；83% 的许可用户至少每日使用一次，企业称平均每周自报节省约 2.8 小时，内部商店当时已有约 1,000 个可供全员使用的助手。法务团队用工具处理高频内部查询。</td></tr>
+        <tr><th>被改变的任务</th><td>文档草拟、翻译、研究、内部问答、法务知识查询与专用助手构建。</td></tr>
+        <tr><th>相对降值的技能</th><td>通用内容生成、基础查询、重复翻译、标准法务答复。</td></tr>
+        <tr><th>相对升值的能力</th><td>用例选择、法务校验、内部产品所有权、权限与知识治理、把节时转为流程结果。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露。无编制、管理跨度或专家/初级比例变化。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。无证据说明 AI 使用率进入绩效或定薪；"80% 日常使用"不能作为人才先进性指标。</td></tr>
+        <tr><th>业务结果</th><td>许可、使用与员工自报节时；没有对照的吞吐、质量、风险、客户或财务结果。</td></tr>
+        <tr><th>替代解释</th><td>早期许可对象可能是高意愿团队；节时可能转化为闲置、工作强度或更多任务，方向未知。</td></tr>
+        <tr><th>可外推范围</th><td>适用于大型、受监管、知识密集企业的扩散路径；不证明许可规模产生同等价值。</td></tr>
+        <tr><th>案例判断</th><td><b>中等可信的扩散与治理案例。</b> 强化 C3/C8，同时直接暴露薪酬证据缺口。</td></tr>
+      </tbody></table></div>
+
+      <h4>K04 Klarna 客服：自动化规模、价值预测与人工回摆必须同时呈现</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>金融科技/客户服务；瑞典/全球；2024—2025</td></tr>
+        <tr><th>主要来源与等级</th><td>Klarna 官方 E59（C1）；第三方对公司回应 E60（C2）</td></tr>
+        <tr><th>已核验事实</th><td>企业声称：上线首月处理约 230 万次对话、占客服聊天约三分之二；平均解决时间从 11 分钟降至 2 分钟，重复咨询下降 25%，工作量"相当于 700 名全职人员"。随后公司强调客户始终可选择人工，并在复杂服务中重新重视人工质量和同理心。</td></tr>
+        <tr><th>被改变的任务</th><td>常规咨询、订单/支付问题、标准响应与路由；复杂、情绪化或异常案例升级人工。</td></tr>
+        <tr><th>相对降值的技能</th><td>脚本化回答、常规路由、标准多语言客服。</td></tr>
+        <tr><th>相对升值的能力</th><td>异常处理、情绪判断、留客与服务补救、质量监控、升级规则和 AI 运营。</td></tr>
+        <tr><th>岗位/人才结构</th><td>"700 名全职人员等价"是工作量口径，不是已核验裁员人数。员工总数变化同时受公司经营和成本周期影响，不可单独归因 AI。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>媒体显示公司重新关注高质量人工服务，但具体招聘量、绩效标准与薪酬调整未披露。</td></tr>
+        <tr><th>业务结果</th><td>时间和重复咨询为公司数据；预计 4,000 万美元利润改善是预测，缺独立审计和完整成本。</td></tr>
+        <tr><th>替代解释</th><td>服务需求、流程简化、产品变化、外包安排和宏观成本削减均可能影响结果。</td></tr>
+        <tr><th>可外推范围</th><td>适用于高频、标准化数字客服；不外推高风险顾问、复杂投诉或长期关系服务。</td></tr>
+        <tr><th>案例判断</th><td><b>高价值的正反合一案例。</b> 支持 C1/C2/C6/C10，反对"任务量等价=岗位消失"。</td></tr>
+      </tbody></table></div>
+
+      <h4>K05 Accenture/GitHub Copilot：供应商标题必须由实验不确定性约束</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>专业服务/软件开发；跨国；2022—2024 研究</td></tr>
+        <tr><th>主要来源与等级</th><td>学术现场实验 E30（A1）；GitHub 供应商解读 E31（C2）</td></tr>
+        <tr><th>已核验事实</th><td>Microsoft 样本 1,663 名、Accenture 样本 311 名；随机鼓励使用 Copilot。拉取请求数量为正向估计，但 Accenture 约 7.5%—8.7% 的估计对加权和显著性口径敏感；低依从和组织变化限制解释。</td></tr>
+        <tr><th>被改变的任务</th><td>代码建议、样板代码、开发流中的局部实现；未覆盖完整软件价值链。</td></tr>
+        <tr><th>相对降值的技能</th><td>模板代码、语法记忆、低上下文实现。</td></tr>
+        <tr><th>相对升值的能力</th><td>需求理解、架构、代码审查、测试、安全、代码库情境与变更责任。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露。拉取请求增加不等于开发者数量减少或小团队永久替代大团队。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。供应商调查中的偏好不等于招聘或定薪机制。</td></tr>
+        <tr><th>业务结果</th><td>输出数量有实验估计；代码质量、维护成本、客户价值和长期缺陷证据不足。</td></tr>
+        <tr><th>替代解释</th><td>组织同时变更、低使用依从、项目难度和代码审查流程可能影响估计。</td></tr>
+        <tr><th>可外推范围</th><td>可支持"工具在部分开发任务产生正向输出"；不可外推复杂遗留代码库或所有资深开发者。</td></tr>
+        <tr><th>案例判断</th><td><b>中等可信的实验案例。</b> 必须与 METR 反例 E35/E36 并列，支持情境化而非单点"开发者提效率"。</td></tr>
+      </tbody></table></div>
+
+      <h4>K06 BCG"参差不齐的技术前沿"：能力边界识别本身成为稀缺能力</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>战略咨询；多国顾问；2023 实验、2025 同行评审</td></tr>
+        <tr><th>主要来源与等级</th><td>758 名顾问预注册随机实验 E27，A1</td></tr>
+        <tr><th>已核验事实</th><td>在 18 项模型能力边界内任务中，AI 组完成任务数约多 12.2%、速度约快 25.1%、质量更高；在边界外复杂任务中，AI 组正确率约低 19 个百分点。</td></tr>
+        <tr><th>被改变的任务</th><td>创意生成、分析、写作、说服性材料与复杂商业问题判断。</td></tr>
+        <tr><th>相对降值的技能</th><td>边界内的标准分析步骤、初稿和信息合成。</td></tr>
+        <tr><th>相对升值的能力</th><td>判断任务是否在模型能力边界内、分解问题、验证事实、识别错误、客户情境和最终建议责任。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露/不可推断。实验不能证明初级顾问减少、团队层级改变或项目费率变化。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。不能从任务表现推测 BCG 已调整评价或薪酬。</td></tr>
+        <tr><th>业务结果</th><td>实验任务绩效，不是实际客户实施、长期信任或利润。</td></tr>
+        <tr><th>替代解释</th><td>特定模型版本、培训提示与模拟任务设计影响效果；顾问为高教育样本。</td></tr>
+        <tr><th>可外推范围</th><td>对数字化知识任务的"边界内增强、边界外误导"机制高度可迁移；具体效应值不可直接外推。</td></tr>
+        <tr><th>案例判断</th><td><b>强机制证据。</b> 支持 C2/C4/C5/C6，是反对"AI 对所有知识任务同向影响"的核心证据。</td></tr>
+      </tbody></table></div>
+
+      <h4>K07 P&amp;G"智能队友"：AI 可以替代部分信息协同，但不等于永久替代团队</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>消费品/产品创新；跨职能专业人员；2025 研究</td></tr>
+        <tr><th>主要来源与等级</th><td>776 名 P&amp;G 专业人员预注册现场实验 E32，A1</td></tr>
+        <tr><th>已核验事实</th><td>在特定产品创新任务中，个人+AI 的表现可达到无 AI 团队水平；AI 帮助不同职能的人产出更均衡的技术/商业内容，并影响积极情绪。</td></tr>
+        <tr><th>被改变的任务</th><td>创意生成、概念评估、技术与商业信息整合、初步提案。</td></tr>
+        <tr><th>相对降值的技能</th><td>例行头脑风暴、初步资料合成、单纯依赖另一职能补充通用信息。</td></tr>
+        <tr><th>相对升值的能力</th><td>问题选择、消费者与技术判断、概念取舍、组合资源、验证可行性、推进市场实验。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露。"个人+AI≈团队"只针对一次任务，不证明长期取消跨职能团队。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。无证据显示复合型人才已获得薪酬调整。</td></tr>
+        <tr><th>业务结果</th><td>任务质量和协同边界有实验结果；真实上市、消费者采用、收入和失败率未验证。</td></tr>
+        <tr><th>替代解释</th><td>实验任务、时间窗口和模型支持可能偏向信息生产，未包含实施摩擦。</td></tr>
+        <tr><th>可外推范围</th><td>可用于创新早期概念工作；不外推工程放大、供应链、监管与商业落地。</td></tr>
+        <tr><th>案例判断</th><td><b>强任务机制、弱组织均衡证据。</b> 支持 C4/C5/C8，反对"实验中团队等价=组织中团队消失"。</td></tr>
+      </tbody></table></div>
+
+      <h4>K08 医疗环境式 AI 记录：价值可能先体现为福祉，而非吞吐量</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>医疗；美国两个州；24 周研究，2025 发布</td></tr>
+        <tr><th>主要来源与等级</th><td>66 名临床人员个体随机阶梯楔形试验 E33（A1）；NEJM AI 社论 E34（D）</td></tr>
+        <tr><th>已核验事实</th><td>AI 记录工具降低工作耗竭与人际疏离；研究未证明增加患者吞吐、降低总成本或改善临床结果。</td></tr>
+        <tr><th>被改变的任务</th><td>临床会话记录、文书初稿和就诊后整理；医生仍复核并承担医疗责任。</td></tr>
+        <tr><th>相对降值的技能</th><td>机械转录、标准记录格式和部分编码工作。</td></tr>
+        <tr><th>相对升值的能力</th><td>临床判断、异常识别、与患者建立关系、核验记录、隐私和责任治理。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露。无证据证明文员、医生或护理人员编制改变。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。福祉改善可能影响留任，但研究未测工资或奖金。</td></tr>
+        <tr><th>业务结果</th><td>可靠结果是部分职业福祉指标；吞吐、收入、事故和净成本仍未知。</td></tr>
+        <tr><th>替代解释</th><td>新工具效应、研究参与、不同专科和机构工作流会影响体验。</td></tr>
+        <tr><th>可外推范围</th><td>适用于高文书负担且有专业签字责任的场景；不外推诊断和治疗决策自动化。</td></tr>
+        <tr><th>案例判断</th><td><b>强反短期绩效主义案例。</b> 支持 C6/C8/C10：AI 价值可进入留任和关系质量，而非当期数量。</td></tr>
+      </tbody></table></div>
+
+      <h4>K09 Walmart 门店：前线 AI 的价值依赖流程嵌入，不等于知识岗位故事</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>零售；美国；2025 官方发布</td></tr>
+        <tr><th>主要来源与等级</th><td>Walmart 官方 E61，C1</td></tr>
+        <tr><th>已核验事实</th><td>工具计划覆盖 150 万名美国员工；主管基于早期试点估计夜班排班规划由 90 分钟降至 30 分钟；实时翻译支持 44 种语言；既有对话工具周用户逾 90 万、日查询逾 300 万。</td></tr>
+        <tr><th>被改变的任务</th><td>排班和任务优先级、跨语言沟通、流程指南查询、库存/陈列辅助。</td></tr>
+        <tr><th>相对降值的技能</th><td>查找手册、标准翻译、人工排任务、重复流程问答。</td></tr>
+        <tr><th>相对升值的能力</th><td>现场例外处理、客户服务、任务协调、反馈工具错误、门店经营判断和实体执行。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露。面向 150 万人不是活跃覆盖率；没有主管或员工编制变化数据。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>公司同时披露工资、培训和职业路径投资，但不能归因 AI；未披露 AI 能力如何进入绩效或定薪。</td></tr>
+        <tr><th>业务结果</th><td>排班规划时间是主管估计；使用量较清晰；销售、缺货、损耗、顾客体验和净人工结果未给对照。</td></tr>
+        <tr><th>替代解释</th><td>任务管理规则、移动应用整合、RFID/AR 与运营变革共同作用。</td></tr>
+        <tr><th>可外推范围</th><td>强调前线任务和实体工作的人机互补；不可用知识工作实验系数直接套用。</td></tr>
+        <tr><th>案例判断</th><td><b>中等可信的规模化流程案例。</b> 支持 C2/C3/C8，并说明"沟通能力"中的翻译部分会商品化。</td></tr>
+      </tbody></table></div>
+
+      <h4>K10 L'Oréal CreAItech：审美没有自动升值，受品牌与责任约束的审美才可能升值</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>消费品/创意营销；全球；2025—2026 页面</td></tr>
+        <tr><th>主要来源与等级</th><td>L'Oréal 官方 E62，C1</td></tr>
+        <tr><th>已核验事实</th><td>企业自建平台整合 Google、Adobe、NVIDIA 等多种模型；公司称集团内已有数千名用户；设置知识产权、安全、品牌传承、真人形象与产品效果表达规则，并内置碳排估算。</td></tr>
+        <tr><th>被改变的任务</th><td>图像、视频、声音、3D 数字孪生等内容概念与生产；模型选择和创意迭代。</td></tr>
+        <tr><th>相对降值的技能</th><td>通用素材变体、低差异内容执行、基础修图和格式适配。</td></tr>
+        <tr><th>相对升值的能力</th><td>品牌品位、创意方向、消费者情境、IP 与真实性判断、跨模型工作流、内容治理。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露。数千用户不能证明设计师岗位减少或"超级个体"形成。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。无证据说明审美、AI 创作或治理能力被单独定价。</td></tr>
+        <tr><th>业务结果</th><td>采用与治理结构可核验；内容周期、媒体效果、品牌资产、销售与成本未公开。</td></tr>
+        <tr><th>替代解释</th><td>平台成功可能依赖既有品牌资产、素材库、供应商生态和集中治理。</td></tr>
+        <tr><th>可外推范围</th><td>适用于品牌资产强、内容规模大、声誉与 IP 风险高的消费企业；不支持"所有创造力升值"。</td></tr>
+        <tr><th>案例判断</th><td><b>中等可信的创意治理案例。</b> 支持 C2/C4/C8；把"审美"收窄为可守护品牌结果的情境能力。</td></tr>
+      </tbody></table></div>
+
+      <h4>K11 中国平安：传统 AI 规模化是生成式 AI 前的重要对照，而非当前证据</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>金融保险；中国；2020 中期报告</td></tr>
+        <tr><th>主要来源与等级</th><td>中国平安正式报告 E63，C1</td></tr>
+        <tr><th>已核验事实</th><td>公司当期披露 AI 机器人覆盖 2,000 多个场景、上半年服务约 8.6 亿次，并报告客服覆盖率和代理人生产率等运营指标。</td></tr>
+        <tr><th>被改变的任务</th><td>标准客服、销售辅助、流程自动化与风控支持；主要是生成式 AI 前的传统 AI。</td></tr>
+        <tr><th>相对降值的技能</th><td>规则化查询、标准流程执行与部分重复服务。</td></tr>
+        <tr><th>相对升值的能力</th><td>场景工程、数据与规则治理、客户异常处理、金融风险责任、规模化运营。</td></tr>
+        <tr><th>岗位/人才结构</th><td>报告不足以识别 AI 单独导致的人员结构变化。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。不能把代理人生产率同比变化全部归因 AI，也无技能付薪公式。</td></tr>
+        <tr><th>业务结果</th><td>运营规模可作历史基线；因果、净成本、质量与长期结果不足。</td></tr>
+        <tr><th>替代解释</th><td>业务增长、渠道变化、数字化投入和管理改革同时发生。</td></tr>
+        <tr><th>可外推范围</th><td>用于说明中国企业可凭规模和流程整合部署 AI；不作为 2026 生成式 AI 能力或薪酬案例。</td></tr>
+        <tr><th>案例判断</th><td><b>历史对照，非核心当期案例。</b> 支持 C8/C12 的情境讨论，并暴露中国生成式 AI 微观证据缺口。</td></tr>
+      </tbody></table></div>
+
+      <h4>K12 Anthropic 内部：高采用组织的产出扩张与技能萎缩同时发生</h4>
+      <div class="tw"><table><tbody>
+        <tr><th>行业/地区/时间</th><td>前沿 AI 研发；美国；2025 内部研究</td></tr>
+        <tr><th>主要来源与等级</th><td>132 名工程师/研究员调查、53 次访谈及遥测 E23，C2</td></tr>
+        <tr><th>已核验事实</th><td>员工自报约 50% 生产率提升、约 60% 工作使用 AI、约 27% 工作原本不会完成；完全委派任务占比仍约 0%—20%；访谈提出导师制、认知卸载与技能萎缩担忧。</td></tr>
+        <tr><th>被改变的任务</th><td>编码、调试、研究支持、文档和"原本不值得做"的长尾任务；个人工作范围扩大。</td></tr>
+        <tr><th>相对降值的技能</th><td>局部实现、初稿、重复调试和低价值待办。</td></tr>
+        <tr><th>相对升值的能力</th><td>高价值问题选择、任务编排、评估边界、验证、研究品位、工具与模型共进化。</td></tr>
+        <tr><th>岗位/人才结构</th><td>未披露。无法从员工感受推断编制、层级或招聘变化。</td></tr>
+        <tr><th>招聘/绩效/薪酬</th><td>未披露。高采用不证明个人获得相应工资；公司本身是工具开发者。</td></tr>
+        <tr><th>业务结果</th><td>使用广度和自报"原本不会做的工作"揭示需求扩张；真实生产率主要为自评，缺外部对照。</td></tr>
+        <tr><th>替代解释</th><td>极端技术能力、强动机、自研工具和组织使命使其不能代表普通企业。</td></tr>
+        <tr><th>可外推范围</th><td>适合作为"前沿可能状态"和风险发现，不作为平均企业系数。</td></tr>
+        <tr><th>案例判断</th><td><b>前沿机制案例、低外部效度。</b> 支持 C5/C7/C8，同时提醒 AI 可能创造工作而非只节省工作。</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <!-- ============ 附录 C ============ -->
+    <section id="appC">
+      <h2 class="chap"><span class="cn">Appendix C</span>员工级 U—T—P—W 数据与 90 天研究设计</h2>
+      <h3>C.1 最小数据模型</h3>
+      <p>企业无需保存所有提示原文。使用假名化员工/团队 ID、任务实例 ID、项目 ID 和绩效周期连接以下数据：人员与机会 H、实际 AI 使用 U、任务与责任 T、净绩效 P、薪酬与流动 W、项目价值 V、治理与员工声音 G、外部与时间 X。工具访问和任务机会是企业投入，不能把未获权限记为个人能力不足。</p>
+      <h3>C.2 识别方法优先级</h3>
+      <ol>
+        <li>团队/网点集群随机或阶梯楔形上线；</li>
+        <li>随机鼓励＋实际使用日志；</li>
+        <li>员工内交叉任务实验；</li>
+        <li>错位采用的双重差分/事件研究；</li>
+        <li>匹配面板/合成对照；</li>
+        <li>高风险战略任务的结构化案例追踪。</li>
+      </ol>
+      <p class="note">对薪酬本身通常不随机制造不公平，应先识别工具/流程效应，再用事前一致的项目价值分配规则。</p>
+      <h3>C.3 90 天最小可行闭环</h3>
+      <div class="tw"><table>
+        <thead><tr><th>阶段</th><th>核心工作</th><th>交付成果</th><th>通过标准</th><th>停止条件</th></tr></thead>
+        <tbody>
+          <tr><th>0—15 天 定题</th><td>选任务、质量/风险、员工告知</td><td>注册表、逻辑模型、字典、RACI</td><td>有所有者和下游指标</td><td>只有活跃率、责任不清</td></tr>
+          <tr><th>16—30 天 基线</th><td>无 AI 基线、数据连接、功效</td><td>基线、缺失/偏差、识别方案</td><td>速度＋质量＋复核</td><td>样本小、口径不稳</td></tr>
+          <tr><th>31—60 天 试点</th><td>分批上线、记录 U/T/P 与版本</td><td>周度面板、事故与变更</td><td>数据完整、风险受控</td><td>严重事故、审查拥堵、污染</td></tr>
+          <tr><th>61—75 天 价值</th><td>估计分布、NAV、瓶颈、人才影响</td><td>效果、敏感性、价值池</td><td>成本完整、质量/风险达标</td><td>只有自报节时、下游抵消</td></tr>
+          <tr><th>76—90 天 付薪</th><td>SCALE-R、TVI、申诉与决策</td><td>证据卡、项目奖、培养/扩张</td><td>团队池先行、公平可解释</td><td>争议未解则递延/不支付</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ============ 附录 D ============ -->
+    <section id="appD">
+      <h2 class="chap"><span class="cn">Appendix D</span>反方观点、适用条件与最终判断</h2>
+      <div class="tw"><table>
+        <caption>附表 D-1 九项反方观点检验</caption>
+        <thead><tr><th>反方观点</th><th>支持证据</th><th>反对证据</th><th>适用条件</th><th>最终判断</th></tr></thead>
+        <tbody>
+          <tr><th>AI 未显著改变多数岗位核心技能</th><td>丹麦平均工资/工时效应小；企业实现影响低 [E29/E69]</td><td>任务实验、职位广告和日志已见变化 [E25—E30/E72]</td><td>早期采用、责任高、流程未重构</td><td>短期岗位稳定可成立，任务已在变；不能由此否定重估</td></tr>
+          <tr><th>企业仍会按职位而非技能付薪</th><td>公平、预算、合规、公开混合机制少 [E09/E10]</td><td>项目奖金、技能政策和绩效探索 [E50/E75—E77]</td><td>中大型/受监管组织</td><td>成立；岗位不会消失，将被动态附加项补充</td></tr>
+          <tr><th>稀缺软技能难测，会沦为话语</th><td>AI 时代直接工资证据少，印象偏差高</td><td>历史组合证据、行为样本和结果可改善测量 [E02]</td><td>能力无情境/无结果权</td><td>成立一半；不为标签付薪，只为行为与结果组合</td></tr>
+          <tr><th>AI 提高而非降低专业知识价值</th><td>边界识别、上下文、责任增强 [E22/E27/E35]</td><td>标准答案、检索、初稿被商品化 [E25/E26/E71]</td><td>高风险、隐性上下文、深度专业</td><td>专业内部分化，不是整体升降</td></tr>
+          <tr><th>监管和壁垒保护传统溢价</th><td>签字、执照、责任转移慢</td><td>执行任务仍可自动化，壁垒不保证生产率</td><td>医疗、金融、法律、工业安全</td><td>延缓而非阻止；责任溢价持续，答案溢价下降</td></tr>
+          <tr><th>技能定价造成不公平和失控</th><td>技能数据过时、机会不等、频繁波动</td><td>岗位底座、到期津贴、多评委、申诉可控</td><td>低成熟度、黑箱定薪</td><td>风险真实；因此限制 M4 以上和可审计工具</td></tr>
+          <tr><th>动态定价破坏信任</th><td>收入不确定、监控和经理裁量</td><td>稳定底座＋透明附加项可提高解释性</td><td>使用量 KPI、秘密监控</td><td>若无员工参与则成立；制度设计决定结果</td></tr>
+          <tr><th>生产率主要来自流程和资本而非个人</th><td>互补资产与企业差异证据强 [E28/E69]</td><td>个体能力影响使用边界和错误恢复 [E22/E25]</td><td>大型系统/平台</td><td>价值是共同生产；必须先团队池、后个人</td></tr>
+          <tr><th>难区分个人、AI 与团队贡献</th><td>缺完整 U—T—P—W，模型与流程同时变化</td><td>随机/准实验、任务日志与团队角色可提高归因</td><td>复杂跨职能项目</td><td>无法完全分解；用区间、证据系数和递延，拒绝伪精确</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ============ 附录 E ============ -->
+    <section id="appE">
+      <h2 class="chap"><span class="cn">Appendix E</span>图表设计说明索引</h2>
+      <p class="note">图表中的"研究者判断"不表示经验统计；设计师在制作时应保留依据、截止日与置信度。概念图不应添加伪造数值或市场规模。</p>
+      <div class="tw"><table>
+        <thead><tr><th>图表</th><th>设计目的</th><th>横轴/纵轴或表格结构</th><th>数据/判断依据与主要结论</th><th>设计师制作说明</th></tr></thead>
+        <tbody>
+          <tr><th>01 技能溢价变化逻辑</th><td>解释标准答案供给如何经任务、组织、结果与分配影响溢价</td><td>五阶段流程；无数值轴</td><td>E01/E03/E06/E25—E30/E67；持续溢价来自组合能力</td><td>五色节点、箭头、页脚注明逻辑图</td></tr>
+          <tr><th>02 六类技能溢价及观测口径</th><td>区分工资、内部薪酬、稳定、晋升、影响与创业价值</td><td>表：类型×定义×指标×AI 路径×禁用代理</td><td>劳动经济学与本报告口径；六类结果不可互代</td><td>纵向六行，突出禁用代理</td></tr>
+          <tr><th>03 技能供给曲线概念示意</th><td>比较标准任务与责任型能力的供给右移幅度</td><td>横轴合格产出；纵轴单位价格/租金；双面板</td><td>机制判断；工资还受需求、制度与议价影响</td><td>同尺度、两色线、标注非实证估计</td></tr>
+          <tr><th>04 暴露到薪酬五段证据链</th><td>阻止从可做直接跳到裁员或加薪</td><td>暴露—采用—任务—净绩效—薪酬流程</td><td>E25/E29/E30/E65/E73；公开严格 L4 为 0</td><td>每箭头上方写所需证据</td></tr>
+          <tr><th>05 岗位—任务—技能—责任—结果</th><td>明确管理分析层级与决策对象</td><td>表：层级×问题×AI 变化×管理决策</td><td>任务是最小分析单元；岗位是治理底座</td><td>按层级由上至下排列</td></tr>
+          <tr><th>06 传统高价值技能重估</th><td>决定自动化、增强与岗位重构动作</td><td>表：10 类任务×替代×增强×人类职责×动作</td><td>E25—E36 及案例；任务可自动不等于岗位消失</td><td>替代/增强采用高/中/低文字，不用伪数值</td></tr>
+          <tr><th>07 答案型到系统型专家</th><td>解释专业价值的两极分化</td><td>横轴任务范围/复用；纵轴责任/情境</td><td>E04/E22/E27/E35—E36；责任型和系统型升值</td><td>四类人才散点，注明概念位置</td></tr>
+          <tr><th>08 十二项战略稀缺能力</th><td>筛选真正值得长期投资的能力组合</td><td>表：能力×稀缺×培养×识别×价值×韧性×条件</td><td>C4/C6/C8/C10；不把所有软技能普遍抬价</td><td>把持续溢价条件置于最右列</td></tr>
+          <tr><th>09 SCALE-R 模型</th><td>评估能力在特定组织/时点的相对溢价潜力</td><td>六轴雷达＋价值/证据/治理三闸门</td><td>原创规范性模型；权重需企业校准</td><td>R 以反向低替代显示；示例轮廓非基准</td></tr>
+          <tr><th>10 SCALE-R 评分锚点</th><td>把抽象变量转为可观察数据</td><td>表：六变量×1/3/5 分×优先数据</td><td>招聘、项目、风险、复用和替代数据</td><td>变量定义左置、数据来源右置</td></tr>
+          <tr><th>11 AI 替代性×组织价值四象限</th><td>决定自动化、重构、退出或战略投资</td><td>横轴 AI 可替代；纵轴组织价值</td><td>C1—C8；分析单位为任务×情境×责任</td><td>四象限低饱和底色、直接标动作</td></tr>
+          <tr><th>12 四象限典型任务</th><td>将抽象象限映射到岗位与任务</td><td>表：象限×实例×动作×误判</td><td>跨行业任务判断；需企业复评</td><td>Q2 与 Q4 强调风险与责任</td></tr>
+          <tr><th>13 五层能力金字塔</th><td>表达价值与责任半径以及层间依赖</td><td>五层梯形，无数值轴</td><td>C2—C8；L1 门槛化，L3—L5 条件升值</td><td>由浅灰到红金；右侧责任半径箭头</td></tr>
+          <tr><th>14 五层能力趋势</th><td>比较 AI 影响、稀缺、培养、价值与人才类型</td><td>表：层级×七个维度</td><td>E11/E22/E25—E32；上层依赖专业基础</td><td>每层一行，趋势用文字</td></tr>
+          <tr><th>15 技能价值迁移地图</th><td>显示 AI 前、增强、原生三阶段迁移</td><td>热力图：14 项技能×3 阶段</td><td>E01—E45、C1—C10；研究者结构化判断</td><td>蓝=上升、红=下降、灰=门槛，单元格直接标字</td></tr>
+          <tr><th>16 主要技能三阶段迁移</th><td>给出每项能力的管理解释</td><td>表：能力×三阶段×迁移判断</td><td>同图表 15；阶段不是固定年份</td><td>保留组合条件，避免单一升降箭头</td></tr>
+          <tr><th>17 AI 杠杆与人才价值</th><td>区分产出膨胀与战略杠杆</td><td>横轴自动化深度；纵轴风险调整净价值</td><td>E28—E30/E69/E73；净值扣除审查和维护</td><td>四象限散点＋流程/数据/治理斜向箭头</td></tr>
+          <tr><th>18 未来高溢价人才图谱</th><td>确定招聘、培养和付薪工具</td><td>表：10 类人才×价值×稀缺×培养×证据×薪酬</td><td>C3—C8/C11；复合型不普遍优于深度专家</td><td>按价值来源分组，薪酬工具置右</td></tr>
+          <tr><th>19 六行业重估条件热力图</th><td>比较行业结构条件而非采用排名</td><td>六行业×任务标准化/数据/责任/实体/需求；1—5 判断</td><td>E06—E17/E25—E45/K01—K12；非统计排名</td><td>同一蓝色序列，单元格显示 1—5</td></tr>
+          <tr><th>20 六行业统一比较矩阵</th><td>把行业差异转成能力和定价动作</td><td>表：行业×暴露×下降×上升×人才×投资×定价×风险</td><td>行业研究与案例三角核验</td><td>固定七个比较字段，便于 PPT 复制</td></tr>
+          <tr><th>21 十二个核心案例总览</th><td>比较任务、能力、结果与证据边界</td><td>表：案例×行业×任务×能力×结果×机制×局限</td><td>K01—K12；公司口径不作因果</td><td>结果层级和未披露项明确标出</td></tr>
+          <tr><th>22 AI 绩效薪酬政策探索</th><td>比较加薪、现货奖、影响绩效与撤回案例</td><td>表：4 案例×政策×借鉴×风险×证据</td><td>K13—K16/E75—E78；均非效果研究</td><td>政策与实际结果分列</td></tr>
+          <tr><th>23 中国三类企业治理情境</th><td>比较民企、国企与跨国公司定价约束</td><td>表：类型×速度×工资约束×价值×风险×工具</td><td>E46—E54 及组织制度分析</td><td>避免给出统一工资系数</td></tr>
+          <tr><th>24 中国企业 AI 价值漏斗</th><td>定位从许可到公平分配的证据漏损</td><td>六层漏斗，无数值比例</td><td>E11/E17/E46—E54/E69；每层需停止标准</td><td>漏斗宽度只表逻辑递进，不表实际转化率</td></tr>
+          <tr><th>25 传统与新型人才定价</th><td>解释九种传统机制的保留与修正</td><td>表：机制×合理性×失真×保留×修正</td><td>C9/C11、E09—E10；岗位仍是公平底座</td><td>用失真与保留双列避免全盘否定</td></tr>
+          <tr><th>26 TVI 模型</th><td>把岗位底座与动态价值、可支付性分开</td><td>100 分堆叠＋四系数闸门</td><td>原创规范性模型；权重为试点起点</td><td>颜色对应 J/S/C/L/A/E/G/T，展示公式</td></tr>
+          <tr><th>27 TVI 维度与薪酬工具</th><td>匹配价值性质、支付方式和复评周期</td><td>表：8 维度×权重×指标×工具×复评</td><td>C9/C11 及薪酬治理逻辑</td><td>权重合计 100；不直接映射金额</td></tr>
+          <tr><th>28 员工级 U—T—P—W 矩阵</th><td>展示公开证据缺失位置</td><td>研究×U/T/P/W/反事实；实/代/缺</td><td>E25/E29/E30/E65/E73/E75；严格 L4 为 0</td><td>三色矩阵、直接字符、页脚截止日</td></tr>
+          <tr><th>29 错误指标及修正</th><td>防止活动、节时和吞吐被当作净价值</td><td>表：错误指标×失真×修正×护栏</td><td>E35/E67/E73/E79 及 TVI 净值口径</td><td>错误与修正并列，护栏最右</td></tr>
+          <tr><th>30 TVI 情境定价示例</th><td>说明同样使用 AI 可有不同薪酬处理</td><td>表：4 情境×判断×支付×禁止</td><td>规范性示例，不是市场基准</td><td>用支付/禁止形成对照</td></tr>
+          <tr><th>31 CEO 与 CHRO 职责接口</th><td>明确战略、人才和治理共同责任</td><td>表：决策域×CEO×CHRO×共同交付</td><td>第 11 章行动议程</td><td>共同行动列作为最终交付</td></tr>
+          <tr><th>32 0—36 个月路线图</th><td>组织价值、人才、数据、治理四线推进</td><td>三阶段×四工作流＋三闸门</td><td>成熟度与 90 天研究设计</td><td>阶段颜色蓝/绿/金；闸门用红字</td></tr>
+          <tr><th>33 分阶段行动表</th><td>给出任务、责任人、交付、指标、风险和检查点</td><td>A/B/C 三张连续表：0—3、3—12、12—36 月</td><td>第 12 章路线图；企业需按风险调周期</td><td>在 Word 中重复表头，保留责任与停止条件</td></tr>
+          <tr><th>34 企业成熟度模型</th><td>限定不同成熟度可采用的定价动作</td><td>M1—M5 阶梯；无绩效数值轴</td><td>原创规范性模型；业务单元按最低维度定级</td><td>阶梯图＋下方禁用提示；不暗示越高越好</td></tr>
+          <tr><th>35 AI 人才定价风险控制</th><td>把伪生产率、责任、公平、KPI 等风险纳入治理</td><td>表：风险×机制×指标×控制×责任人</td><td>C6—C11、E67/E68/E73/E78</td><td>按决策影响排序，责任人明确</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ============ 附录 F ============ -->
+    <section id="appF">
+      <h2 class="chap"><span class="cn">Appendix F</span>资料台账 E01—E79</h2>
+      <p>以下台账记录来源、年份、样本/方法、可安全使用的发现、不可安全推断、证据等级和结论映射；链接均指向原始或权威页面。除特别注明外，访问日期为 2026 年 7 月 18 日。</p>
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>来源（作者/机构、报告/文章）</th><th>时间、样本与方法（摘要）</th><th>等级</th></tr></thead>
+        <tbody>
+          <tr><th>E01</th><td>Autor、Levy、Murnane，The Skill Content of Recent Technological Change</td><td>2003；美国职业任务与计算机化历史数据；任务偏向技术变迁框架</td><td>A2</td></tr>
+          <tr><th>E02</th><td>Deming，The Growing Importance of Social Skills in the Labor Market</td><td>2017；美国 1980—2012 就业与工资数据；职业技能组合分析</td><td>A2</td></tr>
+          <tr><th>E03</th><td>Acemoglu、Restrepo，Automation and New Tasks</td><td>2019；宏观任务模型与历史证据</td><td>A2</td></tr>
+          <tr><th>E04</th><td>Autor、Thompson，Expertise</td><td>2025；1977—2018 美国职业任务、工资与自动化历史分析</td><td>A2</td></tr>
+          <tr><th>E05</th><td>Acemoglu，The Simple Macroeconomics of AI</td><td>2024；宏观模型与任务暴露假设</td><td>B2</td></tr>
+          <tr><th>E06</th><td>ILO，Generative AI and Jobs: A Refined Global Index of Occupational Exposure</td><td>2025；29,753 项任务的波兰代表性任务调查为基础，覆盖 1,640 名就业者、2,861 项任务并结合专家与模型评分；映射全球职业</td><td>B1</td></tr>
+          <tr><th>E07</th><td>IMF，Gen-AI: Artificial Intelligence and the Future of Work</td><td>2024；跨国职业暴露与互补性情景</td><td>B2</td></tr>
+          <tr><th>E08</th><td>OECD，Employment Outlook 2023: AI and the Labour Market</td><td>2023；OECD 跨国调查、文献与政策综合</td><td>B2</td></tr>
+          <tr><th>E09</th><td>OECD，Empowering the Workforce in the Context of a Skills-First Approach</td><td>2025；9 家雇主/协会深访及政府咨询与文献</td><td>B2</td></tr>
+          <tr><th>E10</th><td>OECD，A Skills-First Labour Market</td><td>2026；跨国政策、招聘与技能实践综合</td><td>B2</td></tr>
+          <tr><th>E11</th><td>OECD，Skills in the AI Age</td><td>2026；跨国技能、教育、采用与政策证据综合</td><td>B2</td></tr>
+          <tr><th>E12</th><td>WEF，Future of Jobs Report 2025</td><td>2025；1,000 多家雇主，覆盖逾 1,400 万劳动者、22 个产业集群、55 个经济体</td><td>B2</td></tr>
+          <tr><th>E13</th><td>World Bank，Labor Demand in the Age of Generative AI: Early Evidence from U.S. Job Posting Data</td><td>2025；约 2.85 亿条美国职位广告，2018—2025Q2；事件研究/双重差分</td><td>A2</td></tr>
+          <tr><th>E14</th><td>Stanford HAI，AI Index Report 2026</td><td>2026；多源数据与研究综述</td><td>B2</td></tr>
+          <tr><th>E15</th><td>ECB，The Uptake of Artificial Intelligence among Firms in the Euro Area</td><td>2024；欧元区企业调查</td><td>B2</td></tr>
+          <tr><th>E16</th><td>NBER，Bick、Blandin、Deming，The Rapid Adoption of Generative AI</td><td>2024；美国代表性调查</td><td>B2</td></tr>
+          <tr><th>E17</th><td>World Bank，Digital Progress and Trends Report 2025</td><td>2025；全球数字基础设施、AI 采用和发展差距综合</td><td>B2</td></tr>
+          <tr><th>E18</th><td>IMF，New Skills and AI Are Reshaping the Future of Work</td><td>2026；基于职位广告与新技能需求的研究摘要</td><td>C1</td></tr>
+          <tr><th>E19</th><td>Anthropic，The Anthropic Economic Index</td><td>2025；Claude 匿名对话的任务分类与职业映射</td><td>B1</td></tr>
+          <tr><th>E20</th><td>Anthropic，Economic Index: Learning Curves and the Adoption of AI</td><td>2026；2026 年 2 月 5—12 日各约 100 万条 Claude.ai 与第一方 API 对话</td><td>B1</td></tr>
+          <tr><th>E21</th><td>Anthropic，Labor Market Impacts of AI</td><td>2026；O*NET 约 800 个职业、Claude 实际使用与 CPS 劳动数据结合</td><td>B1</td></tr>
+          <tr><th>E22</th><td>Anthropic，How Claude Code Is Used in Practice</td><td>2026；约 40 万次会话、约 23.5 万名用户，2025 年 10 月—2026 年 4 月；遥测与模型分类</td><td>B1</td></tr>
+          <tr><th>E23</th><td>Anthropic，How AI Is Transforming Work at Anthropic</td><td>2025；132 名工程师/研究员调查、53 次访谈与内部遥测</td><td>C2</td></tr>
+          <tr><th>E24</th><td>Anthropic，Economic Index: AI, Automation and Work Cadences</td><td>2026；Claude 使用节奏与任务模式的遥测分析</td><td>B1</td></tr>
+          <tr><th>E25</th><td>Brynjolfsson、Li、Raymond，Generative AI at Work</td><td>2025 正式发表；5,172 名客服人员、约 300 万次对话；分阶段上线的现场研究</td><td>A2</td></tr>
+          <tr><th>E26</th><td>Noy、Zhang，Experimental Evidence on the Productivity Effects of Generative AI</td><td>2023；约 453 名受过大学教育的专业人员；随机实验，短篇职业写作任务</td><td>A1</td></tr>
+          <tr><th>E27</th><td>Dell'Acqua 等，Navigating the Jagged Technological Frontier</td><td>2023—2025；758 名 BCG 顾问；预注册随机实验</td><td>A1</td></tr>
+          <tr><th>E28</th><td>Dillon 等，Shifting Work Patterns with Generative AI</td><td>2025；66 家企业、7,137 名知识工作者、6 个月随机实验</td><td>A1</td></tr>
+          <tr><th>E29</th><td>Humlum、Vestergaard，Large Language Models, Small Labor Market Effects</td><td>2025 年 10 月修订；丹麦 11 类高暴露职业，约 25,000 名劳动者、约 7,000 个工作场所；两轮代表性采用调查连接匹配雇主—雇员行政数据，以企业政策作准实验变化并采用双重差分</td><td>A2</td></tr>
+          <tr><th>E30</th><td>Cui 等，The Effects of Generative AI on High-Skilled Work: Three Field Experiments with Software Developers</td><td>2026 正式发表；Microsoft、Accenture 与一家匿名财富 100 强企业的三项现场随机实验，合计 4,867 名开发者</td><td>A1</td></tr>
+          <tr><th>E31</th><td>GitHub，Quantifying GitHub Copilot's Impact at Accenture</td><td>2024；供应商对 Accenture 实验的案例解读</td><td>C2</td></tr>
+          <tr><th>E32</th><td>Dell'Acqua 等，The Cybernetic Teammate</td><td>2025；776 名 P&amp;G 专业人员；预注册现场实验，个人/团队及有无 AI 比较</td><td>A1</td></tr>
+          <tr><th>E33</th><td>Tierney 等，Ambient AI Scribes and Physician Well-being</td><td>2025；66 名临床人员、24 周、两个州；个体随机阶梯楔形试验</td><td>A1</td></tr>
+          <tr><th>E34</th><td>NEJM AI 社论，AI Scribes Are Not Productivity Tools (Yet)</td><td>2025；对临床记录证据的编辑评论</td><td>D</td></tr>
+          <tr><th>E35</th><td>METR，Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity</td><td>2025；16 名熟悉大型开源代码库的资深开发者、246 项真实任务；随机实验</td><td>A1</td></tr>
+          <tr><th>E36</th><td>METR，We Are Changing Our Developer Productivity Experiment Design</td><td>2026；57 名开发者、143 个代码库、800 余任务的后续研究说明</td><td>B1</td></tr>
+          <tr><th>E37</th><td>Stanford Digital Economy Lab，Canaries in the Coal Mine</td><td>2025；美国高频工资记录，按年龄与 AI 暴露比较</td><td>A2</td></tr>
+          <tr><th>E38</th><td>PwC，Global AI Jobs Barometer 2025</td><td>2025；近 10 亿条职位广告、六大洲；职业暴露与技能/工资广告分析</td><td>B1</td></tr>
+          <tr><th>E39</th><td>PwC，Global AI Jobs Barometer 2026 及方法说明</td><td>2026；逾 10 亿条职位广告、27 国；另连接 Orbis 企业数据，生产率样本约 52,274 家、工资约 38,961 家</td><td>B1</td></tr>
+          <tr><th>E40</th><td>Lightcast，Beyond the Buzz: Developing the AI Skills Employers Actually Need</td><td>2025；美国职位广告与 AI 技能分类</td><td>B1</td></tr>
+          <tr><th>E41</th><td>LinkedIn Economic Graph，Work Change Report</td><td>2025；平台覆盖逾 10 亿会员、约 6,900 万企业；技能档案与调查</td><td>B1</td></tr>
+          <tr><th>E42</th><td>Microsoft，2025 Work Trend Index</td><td>2025；31 国约 31,000 名知识工作者的独立在线调查，加平台遥测</td><td>B2</td></tr>
+          <tr><th>E43</th><td>OECD，The Impact of AI on the Workplace: Employer and Worker Surveys</td><td>2023；7 国制造与金融企业/劳动者调查</td><td>B2</td></tr>
+          <tr><th>E44</th><td>OECD，Artificial Intelligence and the Labour Market in Japan</td><td>2025；JILPT 约 22,000 名劳动者调查及跨国可比子样本</td><td>B2</td></tr>
+          <tr><th>E45</th><td>OECD，Generative AI and the SME Workforce</td><td>2025；多国中小企业调查与政策综合</td><td>B2</td></tr>
+          <tr><th>E46</th><td>国家统计局，2025 年国民经济和社会发展统计公报</td><td>2026 发布；全国官方统计</td><td>A1</td></tr>
+          <tr><th>E47</th><td>国家统计局，2025 年城镇单位就业人员年平均工资情况</td><td>2026 发布；约 306.2 万家城镇法人单位工资统计</td><td>A1</td></tr>
+          <tr><th>E48</th><td>教育部，2025 届高校毕业生预计规模 1222 万人</td><td>2024 发布；全国教育行政统计预测</td><td>A1</td></tr>
+          <tr><th>E49</th><td>国家统计局，中国统计年鉴 2025</td><td>2025；全国长期统计年鉴</td><td>A1</td></tr>
+          <tr><th>E50</th><td>人社部、财政部、国务院国资委，技能人才薪酬分配指引贯彻落实行动的通知</td><td>政策文件；技能人才薪酬分配行动</td><td>C1</td></tr>
+          <tr><th>E51</th><td>辽宁省人社厅等，支持和保障人工智能创新发展的若干措施</td><td>2025；地方政策文件</td><td>C1</td></tr>
+          <tr><th>E52</th><td>中国信通院，人工智能治理蓝皮书（2025/2026）</td><td>2026；政策、产业与治理文献综合</td><td>B2</td></tr>
+          <tr><th>E53</th><td>中国信通院，人工智能产业相关白皮书</td><td>2026；产业资料与案例综合</td><td>B2</td></tr>
+          <tr><th>E54</th><td>国家发展改革委，"人工智能+"就业政策解读</td><td>2025；政策解读</td><td>C1</td></tr>
+          <tr><th>E55</th><td>OpenAI/Morgan Stanley，Morgan Stanley Wealth Management Deploys GPT-4</td><td>2024；供应商客户案例；财富管理顾问团队</td><td>C2</td></tr>
+          <tr><th>E56</th><td>OpenAI/Moderna，How Moderna Uses ChatGPT Enterprise</td><td>2024；供应商客户案例</td><td>C2</td></tr>
+          <tr><th>E57</th><td>BBVA，Initial ChatGPT Enterprise Deployment</td><td>2024；银行官方案例；首批约 3,300 许可</td><td>C1</td></tr>
+          <tr><th>E58</th><td>BBVA，Expansion to 11,000 Licences</td><td>2025；银行官方更新</td><td>C1</td></tr>
+          <tr><th>E59</th><td>Klarna，AI Assistant Handles Two-Thirds of Customer Service Chats</td><td>2024；公司新闻稿；上线首月</td><td>C1</td></tr>
+          <tr><th>E60</th><td>Customer Experience Dive，Klarna Reinvests in Human Talent</td><td>2025；公司回应与行业报道</td><td>C2</td></tr>
+          <tr><th>E61</th><td>Walmart，AI-Powered Tools for 1.5 Million Associates</td><td>2025；公司官方发布；美国门店员工工具</td><td>C1</td></tr>
+          <tr><th>E62</th><td>L'Oréal，CreAItech: AI Augmented Creativity</td><td>2025/2026 页面；企业自建创意平台</td><td>C1</td></tr>
+          <tr><th>E63</th><td>Ping An，2020 Interim Report</td><td>2020；公司正式报告；传统 AI 历史对照</td><td>C1</td></tr>
+          <tr><th>E64</th><td>Microsoft/Siemens，Industrial Copilot</td><td>2024—2025；工业智能助手官方案例</td><td>C2</td></tr>
+          <tr><th>E65</th><td>Schulz 等，AI Technologies and Employee Pay in the United Kingdom</td><td>2,001 家雇主调查；原始 6,000 名劳动者，最终 5,460 名雇员；按行业×地区×机构规模 576 个簇匹配，工资为六档自报、AI 互动为 1—5 频率；多层模型与机器学习</td><td>B1</td></tr>
+          <tr><th>E66</th><td>Hartley 等，The Labor Market Effects of Generative AI（2026 修订）</td><td>美国采用调查与职业暴露/劳动力市场分析；采用从 2024 年 12 月 30.1% 升至 2025 年 12 月 38.3%</td><td>B1</td></tr>
+          <tr><th>E67</th><td>Jiang 等，AI and the Extended Workday（2025）</td><td>美国 2004—2023 个体时间日记与职业 AI 暴露；观察性设计</td><td>B1</td></tr>
+          <tr><th>E68</th><td>ADP Research，AI isn't just changing work. It might be changing workers.（2026）</td><td>超过 30,000 名美国调查受访者；自 2024 年 10 月按月询问生成式 AI 工作使用</td><td>B2</td></tr>
+          <tr><th>E69</th><td>Yotzov 等，Firm Data on AI（2026）</td><td>美国、英国、德国、澳大利亚分层企业样本，近 6,000 名 CEO/CFO/高管调查</td><td>B1</td></tr>
+          <tr><th>E70</th><td>Engberg 等，Artificial intelligence, tasks, skills, and wages（Research Policy，2025）</td><td>德国过去约二十年的员工级任务、技能与工资资料，连接职业事前工作内容和事后 AI/机器人暴露</td><td>A2</td></tr>
+          <tr><th>E71</th><td>Teutlof 等，Winners and losers of generative AI（JEBO，2025）</td><td>在线自由职业市场 116 个技能簇，比较 ChatGPT 前后需求；平台自然实验/事件研究</td><td>A2</td></tr>
+          <tr><th>E72</th><td>Wang、Wei、Wang，Generative AI and the Reorganization of Labor Demand（2026 预印本）</td><td>美国全国职位广告，LLM 识别广告任务并构建动态暴露；分解跨岗位重配与岗位内重构</td><td>B1</td></tr>
+          <tr><th>E73</th><td>He 等，AI Writes Faster Than Humans Can Review（2026 预印本）</td><td>单一 AI 前沿中型企业，802 名开发者、2024 年 1 月至 2026 年 4 月 196,212 个 PR；纵向面板和错位采用分析</td><td>B1</td></tr>
+          <tr><th>E74</th><td>Vaid、Whillans，Digital Fragmentation and Generative AI Use Across 103 Million Application Events（2026 预印本）</td><td>8 个知识型组织、1,017 名员工、1.03 亿个秒级应用事件；员工日内面板</td><td>B1</td></tr>
+          <tr><th>E75</th><td>Fortune，Omnisend planned AI-use raises（2026 报道）</td><td>约 250 人企业的制度报道；称计划给突出 AI 工作流贡献者 2%—4% 加薪，拟看时间/成本节省、可见业务影响和广泛采用，由经理判断并按季复评</td><td>D2</td></tr>
+          <tr><th>E76—E79</th><td>Brex 现货奖金报道、Meta 绩效计划报道、Duolingo 撤回 AI 使用指标报道，以及相关补充资料</td><td class="note" style="font-style:normal">（原文此处内容在提取时被截断，未能完整获取；对应 K14—K16 薪酬政策边界案例，均为媒体/制度报道级证据，非效果研究。）</td><td>D2</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">证据等级说明：A1 预注册/随机现场实验；A2 高质量准实验或权威行政/历史数据；B1 大样本平台/职位广告/预印本研究；B2 跨国调查与政策综合；C1 企业官方披露；C2 供应商/客户案例；D 社论/媒体报道。</p>
+    </section>
+
+    <hr class="soft">
+    <p class="note">本网页由《技能溢价的重估 · AI 时代真正稀缺能力的定价机制》PDF 报告转换为长文排版；原文中的示意图（图表 01/03/04/07/09/11/13/15/17/19/24/26/28/32/34 等）以说明块呈现，表格与正文均按原文保留。</p>
+  </main>
+</div>
+
+<button class="back-top" id="backTop" aria-label="回到顶部">↑</button>
+
+<script>
+/* progress bar + scrollspy + mobile toc + back-to-top */
+(function(){
+  const prog=document.getElementById('prog');
+  const backTop=document.getElementById('backTop');
+  const links=[...document.querySelectorAll('.toc a')];
+  const map=links.map(a=>({a,el:document.querySelector(a.getAttribute('href'))})).filter(x=>x.el);
+  function onScroll(){
+    const st=document.documentElement.scrollTop||document.body.scrollTop;
+    const h=document.documentElement.scrollHeight-document.documentElement.clientHeight;
+    prog.style.width=(h>0?(st/h*100):0)+'%';
+    backTop.classList.toggle('show',st>500);
+    let cur=map[0];
+    for(const m of map){ if(m.el.getBoundingClientRect().top<=120) cur=m; }
+    links.forEach(a=>a.classList.remove('active'));
+    if(cur) cur.a.classList.add('active');
+  }
+  document.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+  backTop.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+  const menuBtn=document.getElementById('menuBtn'), toc=document.getElementById('toc');
+  menuBtn.addEventListener('click',()=>toc.classList.toggle('open'));
+  toc.addEventListener('click',e=>{ if(e.target.tagName==='A') toc.classList.remove('open'); });
+})();
+</script>
+</body>
+</html>
+  </main>
+</div>
+
+<button class="back-top" id="backTop" aria-label="回到顶部">↑</button>
+
+<script>
+/* progress bar + scrollspy + mobile toc + back-to-top */
+(function(){
+  const prog=document.getElementById('prog');
+  const backTop=document.getElementById('backTop');
+  const links=[...document.querySelectorAll('.toc a')];
+  const map=links.map(a=>({a,el:document.querySelector(a.getAttribute('href'))})).filter(x=>x.el);
+  function onScroll(){
+    const st=document.documentElement.scrollTop||document.body.scrollTop;
+    const h=document.documentElement.scrollHeight-document.documentElement.clientHeight;
+    prog.style.width=(h>0?(st/h*100):0)+'%';
+    backTop.classList.toggle('show',st>500);
+    let cur=map[0];
+    for(const m of map){ if(m.el.getBoundingClientRect().top<=120) cur=m; }
+    links.forEach(a=>a.classList.remove('active'));
+    if(cur) cur.a.classList.add('active');
+  }
+  document.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+  backTop.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+  const menuBtn=document.getElementById('menuBtn'), toc=document.getElementById('toc');
+  menuBtn.addEventListener('click',()=>toc.classList.toggle('open'));
+  toc.addEventListener('click',e=>{ if(e.target.tagName==='A') toc.classList.remove('open'); });
+})();
+</script>
+</body>
+</html>
